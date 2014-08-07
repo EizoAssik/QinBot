@@ -1,6 +1,5 @@
 package com.sssta.qinbot.util;
 
-import java.awt.BorderLayout;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,21 +13,23 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
-import javax.net.ssl.SSLHandshakeException;
-
 import com.sssta.qinbot.Event.EventCallback;
 import com.sssta.qinbot.core.Bot;
 import com.sssta.qinbot.model.VerifyCodeChecker;
 
+
+
 public class HttpHelper {
 	
-	public static final String URL_LOGIN_SIG = "https://ui.ptlogin2.qq.com/cgi-bin/login?daid=164&target=self&style=5&mibao_css=m_webqq&appid=1003903&enable_qlogin=0&no_verifyimg=1&s_url=http%3A%2F%2Fweb2.qq.com%2Floginproxy.html&f_url=loginerroralert&strong_login=1&login_state=10&t=20140612002";
 	public static final String URL_REFER = "http://web2.qq.com/webqq.html";  
-	public static final String URL_CHECK_REFER = "https://ui.ptlogin2.qq.com/cgi-bin/login?daid=164&target=self&style=5&mibao_css=m_webqq&appid=1003903&enable_qlogin=0&no_verifyimg=1&s_url=http%3A%2F%2Fweb2.qq.com%2Floginproxy.html&f_url=loginerroralert&strong_login=1&login_state=10&t=20140612002";
+	public static final String URL_REFER_Q = "https://ui.ptlogin2.qq.com/cgi-bin/login?daid=164&target=self&style=5&mibao_css=m_webqq&appid=1003903&enable_qlogin=0&no_verifyimg=1&s_url=http%3A%2F%2Fweb2.qq.com%2Floginproxy.html&f_url=loginerroralert&strong_login=1&login_state=10&t=20140612002";
 	
 	//uni QQ号   login_sig 通过getLoginSig获得    r 一个随机数
     public static final String URL_FORMAT_CHECK = "https://ssl.ptlogin2.qq.com/check?uin=%s&appid=1003903&js_ver=10087&js_type=0&login_sig=%s&u1=http%%3A%%2F%%2Fweb2.qq.com%%2Floginproxy.html&r=%f";
-    private static  String cookie = ""; 
+      //u qq号 p 加密码  verifycode   login_sig    verifysession
+    public static final String URL_FORMAT_LOGIN = "https://ssl.ptlogin2.qq.com/login?u=%s&p=%s&verifycode=%s&webqq_type=10&remember_uin=1&login2qq=1&aid=1003903&u1=http%%3A%%2F%%2Fweb2.qq.com%%2Floginproxy.html%%3Flogin2qq%%3D1%%26webqq_type%%3D10&h=1&ptredirect=0&ptlang=2052&daid=164&from_ui=1&pttype=1&dumy=&fp=loginerroralert&action=6-31-678356&mibao_css=m_webqq&t=1&g=1&js_type=0&js_ver=10088&login_sig=%s&pt_uistyle=5&pt_vcode_v1=0&pt_verifysession_v1=%s";
+    
+    public static  String cookie = ""; 
 	
 	 public static  String sendPost(String url, String contents,String refer){  
 		 InputStreamReader inr = null;
@@ -155,7 +156,7 @@ public class HttpHelper {
 	    }  
 	    
 	    public static String getLoginSig(){
-	    	String responseString = sendGet(URL_LOGIN_SIG,null);
+	    	String responseString = sendGet(URL_REFER_Q,null);
 	    	Pattern pattern = Pattern.compile("g_login_sig=encodeURIComponent\\(\"(.*?)\"\\);");
 	    	Matcher mat = pattern.matcher(responseString);
 	    	if(mat.find())
@@ -167,7 +168,7 @@ public class HttpHelper {
 	    	String responseString = sendGet(String.format(URL_FORMAT_CHECK,
 	    			Bot.getInstance().getQQ()
 	    			,Bot.getInstance().getLoginSig()
-	    			,new Random().nextDouble()),URL_CHECK_REFER);
+	    			,new Random().nextDouble()),URL_REFER_Q);
 	    	try {
 				VerifyCodeChecker checker = ResponseParser.parseVC(responseString);
 					if(event!=null){
@@ -191,7 +192,7 @@ public class HttpHelper {
 	            conn.setRequestMethod("GET");//"POST" ,"GET"  
 	           // conn.setDoOutput(true);   
 	           
-	            conn.addRequestProperty("Referer", "https://ui.ptlogin2.qq.com/cgi-bin/login?daid=164&target=self&style=5&mibao_css=m_webqq&appid=1003903&enable_qlogin=0&no_verifyimg=1&s_url=http%3A%2F%2Fweb2.qq.com%2Floginproxy.html&f_url=loginerroralert&strong_login=1&login_state=10&t=20140612002");  
+	            conn.addRequestProperty("Referer", URL_REFER_Q);  
 	            conn.addRequestProperty("Cookie", cookie);  
 	            conn.addRequestProperty("Accept-Charset", "UTF-8;");//GB2312, 
 	            conn.addRequestProperty("Accept", "image/webp,*/*;q=0.8");
@@ -203,6 +204,13 @@ public class HttpHelper {
 	                for(String s:conn.getHeaderFields().get("Set-Cookie")){  
 	                    cookie += s;  
 	                }  
+	                
+	                Pattern pattern = Pattern.compile("verifysession=(.*?);");
+	                Matcher matcher = pattern.matcher(cookie);
+	                if (matcher.find()) {
+	   	                Bot.getInstance().setVerifySession(matcher.group(1));
+					}
+	             
 	            }  
 	            is =  conn.getInputStream();  
 	            image = ImageIO.read(is);
@@ -230,4 +238,5 @@ public class HttpHelper {
 	        return image;
 	    }
 	    
+	   
 }

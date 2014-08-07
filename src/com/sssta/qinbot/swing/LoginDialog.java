@@ -1,5 +1,7 @@
 package com.sssta.qinbot.swing;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
@@ -11,6 +13,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
@@ -40,7 +43,7 @@ public class LoginDialog extends JDialog {
 	public LoginDialog(MainWindow mainWindow) {
 		super(mainWindow);
 		this.mainWindow = mainWindow;
-		setTitle("登陆");
+		setTitle("登录");
 		setSize(WIDTH, HEIGHT);
 		setLocation((mainWindow.SCREEN_WIDTH-WIDTH)/2, (mainWindow.SCREEN_HEIGHT-HEIGHT)/2);
 		setResizable(false);
@@ -61,53 +64,55 @@ public class LoginDialog extends JDialog {
 	}
 	
 	private void checkLogin(){
-		
-		SwingUtilities.invokeLater(new Runnable() {
-			
-			@Override
-			public void run() {
-				if(!qqTextField.getText().trim().equals("") && loginSig!=null){
-					imgLabel.setText("正在加载");
-					Bot.getInstance().setQq(qqTextField.getText().trim());
-					HttpHelper.checkLogin(new EventCallback() {
-
-						@Override
-						public void exec(boolean result) {
-							if (result) {
-								vcLabel.setVisible(true);
-								vcTextField.setVisible(true);
-								imgLabel.setVisible(true);
-								vcTextField.setEditable(true);
-								
-								try {
-									imgLabel.setIcon(new ImageIcon(HttpHelper.getVerifyImage(new EventCallback() {
-										
-										@Override
-										public void exec(boolean result) {
-											if (!result) {
-												imgLabel.setText("加载失败，请重试");
-											}else{
-												imgLabel.setText("");
+		if(!qqTextField.getText().trim().equals("") && loginSig!=null){
+			imgLabel.setText("正在加载");
+			new Thread(new Runnable() {
+				
+				@Override
+				public void run() {
+					
+						Bot.getInstance().setQq(qqTextField.getText().trim());
+						HttpHelper.checkLogin(new EventCallback() {
+	
+							@Override
+							public void exec(boolean result) {
+								if (result) {
+									vcLabel.setVisible(true);
+									vcTextField.setVisible(true);
+									imgLabel.setVisible(true);
+									vcTextField.setEditable(true);
+									
+									try {
+										imgLabel.setIcon(new ImageIcon(HttpHelper.getVerifyImage(new EventCallback() {
+											
+											@Override
+											public void exec(boolean result) {
+												if (!result) {
+													imgLabel.setText("加载失败，请重试");
+													imgLabel.setIcon(null);
+												}else{
+													imgLabel.setText("");
+												}
 											}
-										}
-									})));
-								} catch (NullPointerException e) {
-									imgLabel.setText("加载失败，请重试");
+										})));
+									} catch (NullPointerException e) {
+										imgLabel.setText("加载失败，请重试");
+										imgLabel.setIcon(null);
+									}
+									
+									
+								}else {
+									vcLabel.setVisible(false);
+									vcTextField.setVisible(false);
+									imgLabel.setVisible(false);
+									vcTextField.setEditable(false);
 								}
-								
-								
-							}else {
-								vcLabel.setVisible(false);
-								vcTextField.setVisible(false);
-								imgLabel.setVisible(false);
-								vcTextField.setEditable(false);
 							}
+						});
 						}
-					});
-				}		
-					}
-		});
-		
+			}).start();
+		}		
+
 	}
 
 	private void setListener() {
@@ -116,13 +121,9 @@ public class LoginDialog extends JDialog {
 			@Override
 			public void focusLost(FocusEvent e) {
 						checkLogin();
-				
 			}
-			
 			@Override
 			public void focusGained(FocusEvent e) {
-				// TODO Auto-generated method stub
-				
 			}
 		});
 		
@@ -130,26 +131,18 @@ public class LoginDialog extends JDialog {
 			
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
 			}
 			
 			@Override
 			public void mousePressed(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
 			}
 			
 			@Override
 			public void mouseExited(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
 			}
 			
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
 			}
 			
 			@Override
@@ -158,8 +151,53 @@ public class LoginDialog extends JDialog {
 			}
 		});
 		
+		
+		submit.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				
+				login();
+				
+			}
+
+		});
+		
 	}
 
+	private void login() {
+		if (pswField.getText().trim().equals("")) {
+			JOptionPane.showMessageDialog(null, "密码不能为空", "警告", JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+				
+		if (qqTextField.getText().trim().equals("")) {
+			JOptionPane.showMessageDialog(null, "账号不能为空", "警告", JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+				
+		if (vcTextField.isVisible()&&vcTextField.getText().trim().equals("")) {
+			JOptionPane.showMessageDialog(null, "密码不能为空", "警告", JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+		
+		Bot.getInstance().setPsw(pswField.getText().trim());
+		
+		boolean result;
+		if (vcTextField.isVisible()) {
+			result = Bot.getInstance().login(vcTextField.getText().trim());
+		}else{
+			result =Bot.getInstance().login("");
+		}
+		
+		if(!result){
+			checkLogin();
+		}else {
+			dispose();
+			mainWindow.setVisible(true);
+		}
+				
+	}
 	private void initCompoments() {
 		
 		this.setLayout(null);
@@ -189,7 +227,7 @@ public class LoginDialog extends JDialog {
 		vcLabel.setBounds(PADDING_LEFT, PADDING_TOP+COMPOMENT_HEIGHT*2, 80, COMPOMENT_HEIGHT);
 		vcTextField.setBounds(PADDING_LEFT+65,  PADDING_TOP+COMPOMENT_HEIGHT*2, 60, COMPOMENT_HEIGHT);
 	
-		imgLabel.setBounds(PADDING_LEFT+130,  PADDING_TOP+COMPOMENT_HEIGHT*2, 110, COMPOMENT_HEIGHT);
+		imgLabel.setBounds(PADDING_LEFT+130,  PADDING_TOP+COMPOMENT_HEIGHT*2, 120, COMPOMENT_HEIGHT);
 		
 		submit.setBounds(100, PADDING_TOP+COMPOMENT_HEIGHT*3+15, 80, COMPOMENT_HEIGHT);
 		
