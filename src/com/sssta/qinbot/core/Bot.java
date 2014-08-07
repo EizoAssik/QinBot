@@ -3,6 +3,7 @@ package com.sssta.qinbot.core;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.net.URLEncoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -10,6 +11,9 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.swing.JOptionPane;
+
+import atg.taglib.json.util.JSONException;
+import atg.taglib.json.util.JSONObject;
 
 import com.sssta.qinbot.model.BotState;
 import com.sssta.qinbot.model.VerifyCodeChecker;
@@ -30,8 +34,11 @@ public class Bot {
 	private String ptwebqq;  
     private String vfwebqq;  
     private BotState state = BotState.OFFLINE;
+    
+    private static final String CLIENT_ID = "7776085";
       
-    private String skey;  
+    private String skey;
+	private String psessionid;  
 	public static Bot getInstance(){
 		return bot;
 	}
@@ -124,20 +131,27 @@ public class Bot {
          String state = ResponseParser.parseLogin(resultString);
          if (state.contains("登录成功")) {
          	
-         	Pattern  pattern = Pattern.compile("ptwebqq=(\\w+);");  
-            
-         	Matcher matcher;
-         	matcher = pattern.matcher(HttpHelper.cookie);  
-             if(matcher.find()){  
-                bot.setPtwebqq(matcher.group(1));  
-             }  
-             pattern = Pattern.compile("skey=(@\\w+);");  
-             matcher = pattern.matcher(HttpHelper.cookie);  
-             if(matcher.find()){  
-                 bot.setSkey(matcher.group(1));  
-             }  
+                bot.setPtwebqq(HttpHelper.map.get("ptwebqq").getValue());  
+                bot.setSkey(HttpHelper.map.get("skey").getValue());  
              
              bot.setState(BotState.ONLINE);
+             String channelLoginUrl = "http://d.web2.qq.com/channel/login2";  
+             String content = "{\"status\":\"\",\"ptwebqq\":\""+ptwebqq+"\",\"passwd_sig\":\"\",\"clientid\":\""+CLIENT_ID+"\"}";  
+             content = URLEncoder.encode(content);//urlencode   
+             content = "r="+content;//post的数据  
+             String res = HttpHelper.sendPost(channelLoginUrl, content,"http://d.web2.qq.com/proxy.html?v=20110331002&callback=1&id=2");//post  
+             System.out.println("\n  "+ptwebqq+"   "+res);
+             JSONObject rootObject = null;
+			try {
+				rootObject = new JSONObject(res);
+				JSONObject object = rootObject.optJSONObject("result");
+		        vfwebqq = object.optString("vfwebqq");
+		        psessionid = object.optString("psessionid");
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+             
         	return true;
 	    }else{
 	    	JOptionPane.showMessageDialog(null, state,"警告",JOptionPane.WARNING_MESSAGE);

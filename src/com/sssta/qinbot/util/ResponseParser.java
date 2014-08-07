@@ -28,6 +28,7 @@ public class ResponseParser {
     	if (matcher.find()) {
 
 			Bot.getInstance().setNikeName(matcher.group(6));
+			HttpHelper.sendGet(matcher.group(3),"");
 			return matcher.group(5);
 		}
     	else{

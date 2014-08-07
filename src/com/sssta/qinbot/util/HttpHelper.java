@@ -8,13 +8,21 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Random;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
+
+import sun.net.www.http.HttpClient;
+
 import com.sssta.qinbot.Event.EventCallback;
 import com.sssta.qinbot.core.Bot;
+import com.sssta.qinbot.model.BotCookie;
 import com.sssta.qinbot.model.VerifyCodeChecker;
 
 
@@ -29,7 +37,7 @@ public class HttpHelper {
       //u qq号 p 加密码  verifycode   login_sig    verifysession
     public static final String URL_FORMAT_LOGIN = "https://ssl.ptlogin2.qq.com/login?u=%s&p=%s&verifycode=%s&webqq_type=10&remember_uin=1&login2qq=1&aid=1003903&u1=http%%3A%%2F%%2Fweb2.qq.com%%2Floginproxy.html%%3Flogin2qq%%3D1%%26webqq_type%%3D10&h=1&ptredirect=0&ptlang=2052&daid=164&from_ui=1&pttype=1&dumy=&fp=loginerroralert&action=6-31-678356&mibao_css=m_webqq&t=1&g=1&js_type=0&js_ver=10088&login_sig=%s&pt_uistyle=5&pt_vcode_v1=0&pt_verifysession_v1=%s";
     
-    public static  String cookie = ""; 
+    public static HashMap<String, BotCookie> map = new HashMap<String, BotCookie>();
 	
 	 public static  String sendPost(String url, String contents,String refer){  
 		 InputStreamReader inr = null;
@@ -45,8 +53,10 @@ public class HttpHelper {
 	            }else{
 	            	conn.addRequestProperty("Referer", URL_REFER);  
 	            }
-	            conn.addRequestProperty("Cookie", cookie);  
+	            conn.addRequestProperty("Cookie", getCookie());  
 	            conn.addRequestProperty("Accept-Charset", "UTF-8;");//GB2312,  
+	            conn.addRequestProperty("Connection", "keep-alive");
+	            conn.addRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
 	            conn.addRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36");  
 	            conn.setDoOutput(true);   
 	            conn.connect();  
@@ -55,7 +65,8 @@ public class HttpHelper {
 	              
 	            if(conn.getHeaderFields().get("Set-Cookie") != null){  
 	                for(String s:conn.getHeaderFields().get("Set-Cookie")){  
-	                    cookie += s;  
+	                    BotCookie bCookie = new BotCookie(s);
+	                    map.put(bCookie.getName(), bCookie);
 	                }  
 	            }  
 	              
@@ -104,22 +115,28 @@ public class HttpHelper {
 	            URL serverUrl = new URL(url);  
 	            HttpURLConnection conn = (HttpURLConnection) serverUrl.openConnection();   
 	            conn.setRequestMethod("GET");//"POST" ,"GET"  
-	           // conn.setDoOutput(true);   
+	            conn.setDoOutput(true);   
 	            if(refer != null){  
 	                conn.addRequestProperty("Referer", refer);  
 	            }else{
 	            	conn.addRequestProperty("Referer", URL_REFER);  
 	            }
-	            conn.addRequestProperty("Cookie", cookie);  
+	            System.out.println("跳转前——"+conn.getURL().getPath());
+	            conn.addRequestProperty("Cookie", getCookie());  
 	            conn.addRequestProperty("Accept-Charset", "UTF-8;");//GB2312,  
+	            conn.addRequestProperty("Connection", "keep-alive");
+	            conn.addRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
 	            conn.addRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36");
+	            conn.setFollowRedirects(false);
 	            conn.connect();  
 	             
 	            if(conn.getHeaderFields().get("Set-Cookie") != null){  
 	                for(String s:conn.getHeaderFields().get("Set-Cookie")){  
-	                    cookie += s;  
+	                	 BotCookie bCookie = new BotCookie(s);
+		                 map.put(bCookie.getName(), bCookie);
 	                }  
 	            }  
+	            System.out.println("跳转后——"+conn.getURL().getPath());
 	            InputStream ins =  conn.getInputStream();  
 	              
 	            String charset = "UTF-8";   
@@ -193,23 +210,20 @@ public class HttpHelper {
 	           // conn.setDoOutput(true);   
 	           
 	            conn.addRequestProperty("Referer", URL_REFER_Q);  
-	            conn.addRequestProperty("Cookie", cookie);  
+	            conn.addRequestProperty("Cookie", getCookie());  
 	            conn.addRequestProperty("Accept-Charset", "UTF-8;");//GB2312, 
-	            conn.addRequestProperty("Accept", "image/webp,*/*;q=0.8");
-	            conn.addRequestProperty("Connection", "keep-alive");//GB2312, 
+	            conn.addRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+	            conn.addRequestProperty("Connection", "keep-alive");
 	            conn.addRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36");
 	            conn.connect();  
 	             
 	            if(conn.getHeaderFields().get("Set-Cookie") != null){  
 	                for(String s:conn.getHeaderFields().get("Set-Cookie")){  
-	                    cookie += s;  
+	                	 BotCookie bCookie = new BotCookie(s);
+		                 map.put(bCookie.getName(), bCookie);
 	                }  
 	                
-	                Pattern pattern = Pattern.compile("verifysession=(.*?);");
-	                Matcher matcher = pattern.matcher(cookie);
-	                if (matcher.find()) {
-	   	                Bot.getInstance().setVerifySession(matcher.group(1));
-					}
+	   	           	Bot.getInstance().setVerifySession(map.get("verifysession").getValue());
 	             
 	            }  
 	            is =  conn.getInputStream();  
@@ -236,6 +250,22 @@ public class HttpHelper {
 				callback.exec(true);
 			}
 	        return image;
+	    }
+	    
+	    public static String getCookie(){
+	    	StringBuilder sb = new StringBuilder();
+//	    	for (BotCookie cookie:cookies) {
+//				sb.append(cookie.getName()).append("=").append(cookie.getValue()).append(";");
+//			}
+	    	Set<String> keys = map.keySet();
+	    	Iterator<String> iterator = keys.iterator();
+	    	while (iterator.hasNext()) {
+	    		BotCookie cookie = map.get(iterator.next());
+	    		sb.append(cookie.getName()).append("=").append(cookie.getValue()).append(";");
+				
+			}
+	    	return sb.toString();
+
 	    }
 	    
 	   

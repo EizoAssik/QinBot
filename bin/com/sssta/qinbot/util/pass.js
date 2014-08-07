@@ -21,8 +21,8 @@ function str_hmac_md5(key, data) {
 	return binl2str(core_hmac_md5(key, data))
 }
 function core_md5(x, len) {
-	console.log(x);
-	console.log("length", x.length);
+	//console.log(x);
+	//console.log("length", x.length);
 	//console.log("x[", len>>5, "]")
 	//console.log(x[len>>5])
 	x[len >> 5] |= 128 << ((len) % 32);
@@ -33,7 +33,7 @@ function core_md5(x, len) {
 	var c = -1732584194;
 	var d = 271733878;
 	for (var i = 0; i < x.length; i += 16) {
-		console.log(x);
+		//console.log(x);
 		var olda = a;
 		var oldb = b;
 		var oldc = c;
@@ -107,7 +107,7 @@ function core_md5(x, len) {
 		c = safe_add(c, oldc);
 		d = safe_add(d, oldd)
 	}
-	console.log("length", x.length);
+	//console.log("length", x.length);
 	if (mode == 16) {
 		return Array(b, c)
 	} else {
@@ -204,9 +204,9 @@ function hexchar2bin(str) {
 }
 function print(str) {
 	for (var i = 0; i < str.length; i += 1) {
-		console.log(str[i] + ' ')
+		//console.log(str[i] + ' ')
 	}
-	console.log('\n')
+	//console.log('\n')
 }
 function getEncryption(password, uin, vcode) {
 	var str1 = hexchar2bin(md5(password));
