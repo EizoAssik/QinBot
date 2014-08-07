@@ -13,7 +13,7 @@ public class VerifyCodeChecker {
 	}
 
 	public String getReqCode() {
-		return isNeed()?reqCode:"!MPG";
+		return reqCode;
 	}
 
 }

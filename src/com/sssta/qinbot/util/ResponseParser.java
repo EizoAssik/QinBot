@@ -9,6 +9,8 @@ import com.sssta.qinbot.model.VerifyCodeChecker;
 public class ResponseParser {
 	//解析验证码字符串
 	public static VerifyCodeChecker parseVC(String respones) throws ParseException{
+		System.out.println();
+		System.out.println(respones);
 		Pattern pattern  = Pattern.compile("ptui_checkVC\\('(.)','(.*?)'(.[^\\)])*\\);");
 		Matcher matcher = pattern.matcher(respones);
 		if(matcher.find()){
