@@ -31,6 +31,7 @@ public class HttpHelper {
 	
 	public static final String URL_REFER = "http://web2.qq.com/webqq.html";  
 	public static final String URL_REFER_Q = "https://ui.ptlogin2.qq.com/cgi-bin/login?daid=164&target=self&style=5&mibao_css=m_webqq&appid=1003903&enable_qlogin=0&no_verifyimg=1&s_url=http%3A%2F%2Fweb2.qq.com%2Floginproxy.html&f_url=loginerroralert&strong_login=1&login_state=10&t=20140612002";
+	public static final String URL_REFER_POLL = "http://d.web2.qq.com/proxy.html?v=20110331002&callback=1&id=2";
 	
 	//uni QQ号   login_sig 通过getLoginSig获得    r 一个随机数
     public static final String URL_FORMAT_CHECK = "https://ssl.ptlogin2.qq.com/check?uin=%s&appid=1003903&js_ver=10087&js_type=0&login_sig=%s&u1=http%%3A%%2F%%2Fweb2.qq.com%%2Floginproxy.html&r=%f";
@@ -128,7 +129,7 @@ public class HttpHelper {
 	            conn.addRequestProperty("Connection", "keep-alive");
 	            conn.addRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
 	            conn.addRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36");
-	            conn.setFollowRedirects(false);
+	            HttpURLConnection.setFollowRedirects(false);
 	            conn.connect();  
 	             
 	            if(conn.getHeaderFields().get("Set-Cookie") != null){  
@@ -198,18 +199,20 @@ public class HttpHelper {
 			}
 	    }
 	    
-	    public static BufferedImage getVerifyImage(EventCallback callback){
+	    public static BufferedImage getImage(String url,String refer,EventCallback callback){
 	    	BufferedImage image = null;
 	    	HttpURLConnection conn = null;
 	    	InputStream is = null;
 	        try {
-	        	Bot bot = Bot.getInstance();
-	        	URL serverUrl = new URL(String.format("https://ssl.captcha.qq.com/getimage?&uin=%s&aid=1003903&%f&cap_cd=%s",bot.getQQ(),new Random().nextDouble(),bot.getLoginSig()));  
+	        	URL serverUrl = new URL(url);  
 	            conn = (HttpURLConnection) serverUrl.openConnection();   
 	            conn.setRequestMethod("GET");//"POST" ,"GET"  
 	           // conn.setDoOutput(true);   
-	           
-	            conn.addRequestProperty("Referer", URL_REFER_Q);  
+	            if (refer!=null) {
+	            	conn.addRequestProperty("Referer",refer);  
+				}else {
+		            conn.addRequestProperty("Referer", URL_REFER_Q);  
+				}
 	            conn.addRequestProperty("Cookie", getCookie());  
 	            conn.addRequestProperty("Accept-Charset", "UTF-8;");//GB2312, 
 	            conn.addRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");

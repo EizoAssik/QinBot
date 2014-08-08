@@ -7,6 +7,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.util.Random;
 
 import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
@@ -89,7 +90,10 @@ public class LoginDialog extends JDialog {
 									vcTextField.setEditable(true);
 									
 									try {
-										imgLabel.setIcon(new ImageIcon(HttpHelper.getVerifyImage(new EventCallback() {
+										Bot bot = Bot.getInstance();
+										imgLabel.setIcon(new ImageIcon(HttpHelper.getImage(String.format("https://ssl.captcha.qq.com/getimage?&uin=%s&aid=1003903&%f&cap_cd=%s",bot.getQQ(),new Random().nextDouble(),bot.getLoginSig())
+												,HttpHelper.URL_REFER_Q
+												,new EventCallback() {
 											
 											@Override
 											public void exec(boolean result) {
