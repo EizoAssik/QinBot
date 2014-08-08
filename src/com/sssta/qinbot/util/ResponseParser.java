@@ -26,8 +26,8 @@ public class ResponseParser {
 		Pattern pattern = Pattern.compile("ptuiCB\\('(.*?)', *'(.*?)', *'(.*?)', *'(.*?)', *'(.*?)', *'(.*?)'\\);");
     	Matcher matcher = pattern.matcher(response);
     	if (matcher.find()) {
-
 			Bot.getInstance().setNikeName(matcher.group(6));
+			//第二次登陆回调
 			HttpHelper.sendGet(matcher.group(3),"");
 			return matcher.group(5);
 		}

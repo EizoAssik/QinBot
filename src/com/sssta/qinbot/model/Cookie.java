@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 
-public class BotCookie
+public class Cookie
 {
 	/**
 	 * 名字
@@ -41,7 +41,7 @@ public class BotCookie
      * @param path
      * @param expired
      */
-    public BotCookie(String name, String value, String domain, String path,
+    public Cookie(String name, String value, String domain, String path,
             Date expired)
     {
 	    this.name = name;
@@ -56,7 +56,7 @@ public class BotCookie
      * 通过一个原始的cookie字符串解析cookie
      * @param cookie
      */
-    public BotCookie(String cookie)
+    public Cookie(String cookie)
     {
     	/*
     	这里只解析name, value, domain, path, Max-Age(expired)
@@ -183,7 +183,7 @@ public class BotCookie
     }
 
 
-	/* (non-Javadoc)
+	/** (non-Javadoc)
      * @see java.lang.Object#toString()
      */
     @Override

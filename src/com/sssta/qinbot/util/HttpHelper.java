@@ -22,7 +22,7 @@ import sun.net.www.http.HttpClient;
 
 import com.sssta.qinbot.Event.EventCallback;
 import com.sssta.qinbot.core.Bot;
-import com.sssta.qinbot.model.BotCookie;
+import com.sssta.qinbot.model.Cookie;
 import com.sssta.qinbot.model.VerifyCodeChecker;
 
 
@@ -37,7 +37,9 @@ public class HttpHelper {
       //u qq号 p 加密码  verifycode   login_sig    verifysession
     public static final String URL_FORMAT_LOGIN = "https://ssl.ptlogin2.qq.com/login?u=%s&p=%s&verifycode=%s&webqq_type=10&remember_uin=1&login2qq=1&aid=1003903&u1=http%%3A%%2F%%2Fweb2.qq.com%%2Floginproxy.html%%3Flogin2qq%%3D1%%26webqq_type%%3D10&h=1&ptredirect=0&ptlang=2052&daid=164&from_ui=1&pttype=1&dumy=&fp=loginerroralert&action=6-31-678356&mibao_css=m_webqq&t=1&g=1&js_type=0&js_ver=10088&login_sig=%s&pt_uistyle=5&pt_vcode_v1=0&pt_verifysession_v1=%s";
     
-    public static HashMap<String, BotCookie> map = new HashMap<String, BotCookie>();
+    private static HashMap<String, Cookie> cookieMap = new HashMap<String, Cookie>();
+	private static StringBuilder cookieCache = new StringBuilder();
+
 	
 	 public static  String sendPost(String url, String contents,String refer){  
 		 InputStreamReader inr = null;
@@ -65,8 +67,7 @@ public class HttpHelper {
 	              
 	            if(conn.getHeaderFields().get("Set-Cookie") != null){  
 	                for(String s:conn.getHeaderFields().get("Set-Cookie")){  
-	                    BotCookie bCookie = new BotCookie(s);
-	                    map.put(bCookie.getName(), bCookie);
+	                    addCookie(new Cookie(s));
 	                }  
 	            }  
 	              
@@ -132,8 +133,7 @@ public class HttpHelper {
 	             
 	            if(conn.getHeaderFields().get("Set-Cookie") != null){  
 	                for(String s:conn.getHeaderFields().get("Set-Cookie")){  
-	                	 BotCookie bCookie = new BotCookie(s);
-		                 map.put(bCookie.getName(), bCookie);
+	                    addCookie(new Cookie(s));
 	                }  
 	            }  
 	            System.out.println("跳转后——"+conn.getURL().getPath());
@@ -219,11 +219,10 @@ public class HttpHelper {
 	             
 	            if(conn.getHeaderFields().get("Set-Cookie") != null){  
 	                for(String s:conn.getHeaderFields().get("Set-Cookie")){  
-	                	 BotCookie bCookie = new BotCookie(s);
-		                 map.put(bCookie.getName(), bCookie);
+	                    addCookie(new Cookie(s));
 	                }  
 	                
-	   	           	Bot.getInstance().setVerifySession(map.get("verifysession").getValue());
+	   	           	Bot.getInstance().setVerifySession(cookieMap.get("verifysession").getValue());
 	             
 	            }  
 	            is =  conn.getInputStream();  
@@ -253,20 +252,27 @@ public class HttpHelper {
 	    }
 	    
 	    public static String getCookie(){
-	    	StringBuilder sb = new StringBuilder();
-//	    	for (BotCookie cookie:cookies) {
-//				sb.append(cookie.getName()).append("=").append(cookie.getValue()).append(";");
-//			}
-	    	Set<String> keys = map.keySet();
-	    	Iterator<String> iterator = keys.iterator();
-	    	while (iterator.hasNext()) {
-	    		BotCookie cookie = map.get(iterator.next());
-	    		sb.append(cookie.getName()).append("=").append(cookie.getValue()).append(";");
-				
-			}
-	    	return sb.toString();
-
+	    	return cookieCache.toString();
 	    }
 	    
+	    public static String getCookie(boolean focusRefresh){
+	    	if (focusRefresh) {
+	    		cookieCache = new StringBuilder();
+	    		Set<String> keys = cookieMap.keySet();
+		    	Iterator<String> iterator = keys.iterator();
+		    	while (iterator.hasNext()) {
+					addCookie(cookieMap.get(iterator.next()));
+				}
+			}
+	    	return cookieCache.toString();
+	    }
+	    
+	    public static void addCookie(Cookie cookie){
+	    	cookieMap.put(cookie.getName(), cookie);
+    		cookieCache.append(cookie.getName()).append("=").append(cookie.getValue()).append(";");
+	    }
 	   
+	    public static String getCookie(String key){
+	    	return cookieMap.get(key).getValue();
+	    }
 }

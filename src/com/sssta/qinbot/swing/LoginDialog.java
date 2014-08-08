@@ -24,11 +24,15 @@ import com.sssta.qinbot.core.Bot;
 import com.sssta.qinbot.util.HttpHelper;
 
 public class LoginDialog extends JDialog {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7716152343854581435L;
+	
 	private JLabel qqLabel,pswLabel,vcLabel,imgLabel;
 	private JTextField qqTextField,vcTextField;
 	private JPasswordField pswField;
 	private JButton submit,refresh;
-	private ImageIcon verifyImage;
 	
 	private static final int WIDTH =280;
 	private static final int HEIGHT = 210;
@@ -63,20 +67,22 @@ public class LoginDialog extends JDialog {
 
 	}
 	
+	
+	//检测登陆状态已经判断是否需要验证码
 	private void checkLogin(){
 		if(!qqTextField.getText().trim().equals("") && loginSig!=null){
+			submit.setEnabled(true);
+			submit.setText("登陆");
 			imgLabel.setText("正在加载");
+			//开新线程来获取验证码
 			new Thread(new Runnable() {
-				
 				@Override
 				public void run() {
-					
 						Bot.getInstance().setQq(qqTextField.getText().trim());
 						HttpHelper.checkLogin(new EventCallback() {
-	
 							@Override
-							public void exec(boolean result) {
-								if (result) {
+							public void exec(boolean succeed) {
+								if (succeed) {
 									vcLabel.setVisible(true);
 									vcTextField.setVisible(true);
 									imgLabel.setVisible(true);
@@ -166,6 +172,7 @@ public class LoginDialog extends JDialog {
 	}
 
 	private void login() {
+		
 		if (pswField.getText().trim().equals("")) {
 			JOptionPane.showMessageDialog(null, "密码不能为空", "警告", JOptionPane.INFORMATION_MESSAGE);
 			return;
@@ -181,6 +188,9 @@ public class LoginDialog extends JDialog {
 			return;
 		}
 		
+		submit.setEnabled(false);
+		submit.setText("正在登陆");
+		
 		Bot.getInstance().setPsw(pswField.getText().trim());
 		
 		boolean result;
@@ -191,8 +201,10 @@ public class LoginDialog extends JDialog {
 		}
 		
 		if(!result){
+			//登陆失败，重新检测登陆状态和获取新验证码
 			checkLogin();
 		}else {
+			//登陆成功，显示主窗口；
 			dispose();
 			mainWindow.setVisible(true);
 		}
@@ -227,7 +239,7 @@ public class LoginDialog extends JDialog {
 		vcLabel.setBounds(PADDING_LEFT, PADDING_TOP+COMPOMENT_HEIGHT*2, 80, COMPOMENT_HEIGHT);
 		vcTextField.setBounds(PADDING_LEFT+65,  PADDING_TOP+COMPOMENT_HEIGHT*2, 60, COMPOMENT_HEIGHT);
 	
-		imgLabel.setBounds(PADDING_LEFT+130,  PADDING_TOP+COMPOMENT_HEIGHT*2, 120, COMPOMENT_HEIGHT);
+		imgLabel.setBounds(PADDING_LEFT+130,  PADDING_TOP+COMPOMENT_HEIGHT*2, 120, (int)(COMPOMENT_HEIGHT*1.3));
 		
 		submit.setBounds(100, PADDING_TOP+COMPOMENT_HEIGHT*3+15, 80, COMPOMENT_HEIGHT);
 		
