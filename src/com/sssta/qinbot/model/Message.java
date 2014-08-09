@@ -1,21 +1,30 @@
 package com.sssta.qinbot.model;
 
-public class Message {
-	public enum MessageType{
-		GROUP_MESSAGE("group_message"),MESSAGE("message");
-		
-		private String name;
-		private MessageType(String name){
-			this.name = name;
-		}
-		@Override
-		public String toString() {
-			return name;
-		}
-	}
+import java.util.LinkedList;
+import java.util.List;
+
+import com.sssta.qinbot.exception.MessageErrorException;
+
+import atg.taglib.json.util.JSONArray;
+import atg.taglib.json.util.JSONException;
+import atg.taglib.json.util.JSONObject;
+
+public abstract class Message {
 	
-	//基础信息
-	public MessageType type;
+	private static final String POLL_TYPE = "poll_type";
+	private static final String RETURN_CODE = "retcode";
+	private static final String RESULT = "result";
+	public static final String TYPE_GROUP = "group_message";
+	public static final String TYPE_NORMAL = "message";
+	private static final String CONTENT = "content";
+	private static final String TIME = "time";
+	private static final String FROM = "from_uni";
+	private static final String TO = "to_uni";
+	private static final String MSG_ID = "msg_id";
+	private static final String MSG_ID2 = "msg_id2";
+	private static final String MSG_TYPE = "msg_type";
+	private static final String REPLY_IP = "reply_ip";
+	
 	public String content;
 	public long time;
 	public String from;
@@ -25,96 +34,130 @@ public class Message {
 	public int msgType;
 	public String replyIp;
 	
-	//群组信息的uni字段
-	public String groupCode;
-	public String infoSeq;
-	public String sender;//即为from
-	public String seq;
-	
-	
-	public Message(String json){
+	public Message(String reply){
 		
 	}
 	
+	public Message(JSONObject message){
+		content = message.optJSONArray(CONTENT).optString(1);
+		time = message.optLong(TIME);
+		from = message.optString(FROM);
+		to = message.optString(TO);
+		msgId = message.optString(MSG_ID);
+		msgId2 = message.optString(MSG_ID2);
+		msgType = message.optInt(MSG_TYPE);
+		replyIp = message.optString(REPLY_IP);
+	}
+
 	
-	public MessageType getType() {
-		return type;
+	public static List<Message> generateMessages(String json) throws JSONException, MessageErrorException{
+		List<Message> messages = new LinkedList<Message>();
+		JSONObject base = new JSONObject(json);
+		int retCode = base.optInt(RETURN_CODE,-1);
+		if (retCode != 0 ) {
+			throw new MessageErrorException(retCode);
+		}else {
+			JSONArray results = base.optJSONArray(RESULT);
+			for (int i = 0; i < results.length(); i++) {
+				JSONObject message = results.optJSONObject(i);
+				String type = message.optString(POLL_TYPE);
+				if (type.equals(TYPE_NORMAL)) {
+					messages.add(new NormalMessage(message));
+				}else{
+					messages.add(new GroupMessage(message));
+				}
+			}
+		}
+		return messages;
 	}
-	public void setType(MessageType type) {
-		this.type = type;
-	}
+	
+	
+	public abstract String getType();
+	public abstract void reply(String msg);
+	public abstract String generateReplyJson();
+
 	public String getContent() {
 		return content;
 	}
+
+
 	public void setContent(String content) {
 		this.content = content;
 	}
+
+
 	public long getTime() {
 		return time;
 	}
+
+
 	public void setTime(long time) {
 		this.time = time;
 	}
+
+
 	public String getFrom() {
 		return from;
 	}
+
+
 	public void setFrom(String from) {
 		this.from = from;
 	}
+
+
 	public String getTo() {
 		return to;
 	}
+
+
 	public void setTo(String to) {
 		this.to = to;
 	}
+
+
 	public String getMsgId() {
 		return msgId;
 	}
+
+
 	public void setMsgId(String msgId) {
 		this.msgId = msgId;
 	}
+
+
 	public String getMsgId2() {
 		return msgId2;
 	}
+
+
 	public void setMsgId2(String msgId2) {
 		this.msgId2 = msgId2;
 	}
+
+
 	public int getMsgType() {
 		return msgType;
 	}
+
+
 	public void setMsgType(int msgType) {
 		this.msgType = msgType;
 	}
+
+
 	public String getReplyIp() {
 		return replyIp;
 	}
+
+
 	public void setReplyIp(String replyIp) {
 		this.replyIp = replyIp;
 	}
-	public String getGroupCode() {
-		return groupCode;
-	}
-	public void setGroupCode(String groupCode) {
-		this.groupCode = groupCode;
-	}
-	public String getInfoSeq() {
-		return infoSeq;
-	}
-	public void setInfoSeq(String infoSeq) {
-		this.infoSeq = infoSeq;
-	}
-	public String getSender() {
-		return sender;
-	}
-	public void setSender(String sender) {
-		this.sender = sender;
-	}
-	public String getSeq() {
-		return seq;
-	}
-	public void setSeq(String seq) {
-		this.seq = seq;
-	}
+
+	
+	
+	
 	/*信息格式
 	 
 	 {
