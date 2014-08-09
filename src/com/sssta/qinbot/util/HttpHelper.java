@@ -17,6 +17,8 @@ import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 
+import sun.net.httpserver.DefaultHttpServerProvider;
+import sun.net.www.http.HttpClient;
 import atg.taglib.json.util.Cookie;
 
 import com.sssta.qinbot.core.Bot;
@@ -33,7 +35,7 @@ public class HttpHelper {
 	public static final String URL_REFER = "http://web2.qq.com/webqq.html";  
 	public static final String URL_REFER_Q = "https://ui.ptlogin2.qq.com/cgi-bin/login?daid=164&target=self&style=5&mibao_css=m_webqq&appid=1003903&enable_qlogin=0&no_verifyimg=1&s_url=http%3A%2F%2Fweb2.qq.com%2Floginproxy.html&f_url=loginerroralert&strong_login=1&login_state=10&t=20140612002";
 	public static final String URL_REFER_POLL = "http://d.web2.qq.com/proxy.html?v=20110331002&callback=1&id=2";
-	
+	public static final String URL_SEND_QUN = "http://d.web2.qq.com/channel/send_qun_msg2";
 	//uni QQ号   login_sig 通过getLoginSig获得    r 一个随机数
     public static final String URL_FORMAT_CHECK = "https://ssl.ptlogin2.qq.com/check?uin=%s&appid=1003903&js_ver=10087&js_type=0&login_sig=%s&u1=http%%3A%%2F%%2Fweb2.qq.com%%2Floginproxy.html&r=%f";
       //u qq号 p 加密码  verifycode   login_sig    verifysession
@@ -111,10 +113,79 @@ public class HttpHelper {
 	 
 	 public static  String poll(String contents){  
 		 InputStreamReader inr = null;
+		 StringBuffer res;
 	        try{   
 	               
 	            //URL serverUrl = new URL(contents); 
 	            URL serverUrl = new URL(Poller.URL_POLL);  
+
+	            HttpURLConnection conn = (HttpURLConnection) serverUrl.openConnection();   
+	            //conn.setRequestMethod("GET");//"POST" ,"GET" 
+	            conn.setRequestMethod("POST");//"POST
+	            conn.addRequestProperty("Referer", URL_REFER_POLL);  
+	           // conn.addRequestProperty("Cookie", getCookies(new String[]{"p_skey","pt4_token","ptcz","ptisp","ptwebqq","skey","verifysession"}));  
+		         conn.addRequestProperty("Cookie", getCookie());  
+
+	            conn.addRequestProperty("Accept-Encoding", "gzip,deflate,sdch");
+	            conn.addRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+	            conn.addRequestProperty("Connection", "keep-alive");
+	            conn.addRequestProperty("Accept", "*/*");
+	            conn.addRequestProperty("Accept-Language", "zh-CN,zh;q=0.8");
+	            conn.addRequestProperty("Host", "d.web2.qq.com");
+	            conn.addRequestProperty("Origin", "http://d.web2.qq.com");
+	            conn.addRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36");  
+	            conn.setDoOutput(true); 
+	            conn.setDoInput(true);
+	            
+	            conn.setReadTimeout(60*1000);
+	            conn.setConnectTimeout(20*1000);
+	            conn.connect();  
+	             System.out.println(contents);
+	            conn.getOutputStream().write(contents.getBytes());  
+	            conn.getOutputStream().flush(); 
+	            conn.getOutputStream().close(); 
+	            
+	              
+	            InputStream ins =  conn.getInputStream();  
+	              
+	            inr = new InputStreamReader(ins, "UTF-8");  
+	            BufferedReader bfr = new BufferedReader(inr);  
+	             
+	            String line = "";  
+	           res = new StringBuffer();   
+	            do{  
+	                res.append(line);  
+	                line = bfr.readLine();  
+	               //System.out.println(line);  
+	            }while(line != null);  
+	            
+	         //   System.out.println(">>>==="+res);  
+	              
+	        }catch(Exception e){  
+	            e.printStackTrace();  
+	            return null;  
+	        }   finally{
+	        	if(inr!=null){
+	        		try {
+	        			inr.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}finally{
+						inr =null;
+					}
+	        		
+	        	}
+	 
+	        }
+            return res.toString();
+	    }  
+	 
+	 public static  String send(String contents){  
+		 InputStreamReader inr = null;
+	        try{   
+	               
+	            //URL serverUrl = new URL(contents); 
+	            URL serverUrl = new URL(URL_SEND_QUN);  
 
 	            HttpURLConnection conn = (HttpURLConnection) serverUrl.openConnection();   
 	            //conn.setRequestMethod("GET");//"POST" ,"GET" 
@@ -126,13 +197,20 @@ public class HttpHelper {
 	            conn.addRequestProperty("Accept-Charset", "UTF-8;");//GB2312,  
 	            conn.addRequestProperty("Connection", "keep-alive");
 	            conn.addRequestProperty("Accept", "*/*");
+	            conn.addRequestProperty("Accept-Language", "zh-CN,zh;q=0.8");
+	            conn.addRequestProperty("Host", "d.web2.qq.com");
+	            conn.addRequestProperty("Origin", "http://d.web2.qq.com");
 	            conn.addRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36");  
 	            conn.setDoOutput(true); 
 	            conn.setDoInput(true);
+	            
+	            conn.setReadTimeout(60*1000);
+	            conn.setConnectTimeout(20*1000);
 	            conn.connect();  
 	              
 	            conn.getOutputStream().write(contents.getBytes());  
-	              
+	            conn.getOutputStream().flush(); 
+	            conn.getOutputStream().close(); 
 	            
 	              
 	            InputStream ins =  conn.getInputStream();  
@@ -150,8 +228,7 @@ public class HttpHelper {
 	            }while(line != null);  
 	            
 	         //   System.out.println(">>>==="+res);  
-	              
-	            return res.toString();  
+	              return res.toString();
 	        }catch(Exception e){  
 	            e.printStackTrace();  
 	            return null;  
@@ -296,6 +373,7 @@ public class HttpHelper {
 	        String verifyString = HttpHelper.getCookie("verifysession");
 	        if (verifyString!=null) {
 		        Bot.getInstance().setVerifySession(verifyString);
+		        HttpHelper.addCookie(new BotCookie("ptvfsession",verifyString));
 			}
 	        if (callback!=null) {
 				callback.exec(true);
@@ -319,8 +397,9 @@ public class HttpHelper {
 	    }
 	    
 	    public static void addCookie(BotCookie cookie){
-	    	cookieMap.put(cookie.getName(), cookie);
+	    	System.out.println(cookie.getName());
     		cookieCache.append(cookie.getName()).append("=").append(cookie.getValue()).append(";");
+	    	cookieMap.put(cookie.getName(), cookie);
 	    }
 	   
 	    public static String getCookie(String key){
@@ -330,6 +409,16 @@ public class HttpHelper {
 			}else {
 				return null;
 			}
+	    }
+	    
+	    public static String getCookies(String[] keys){
+	    	StringBuilder cookiesBuilder = new StringBuilder();
+	    	for (String key:keys) {
+	    		System.out.println(key);
+	    		BotCookie cookie = cookieMap.get(key);
+	    		cookiesBuilder.append(cookie.getName()).append("=").append(cookie.getValue()).append(";");
+			}
+	    	return cookiesBuilder.toString();
 	    }
 
 

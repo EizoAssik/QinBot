@@ -7,11 +7,11 @@ import sun.tools.tree.BitAndExpression;
 
 import com.sssta.qinbot.util.HttpHelper;
 
-public class Poller extends Thread {
+public class Sender extends Thread {
 	public static final String URL_POLL = "http://d.web2.qq.com/channel/poll2";
 	private boolean pause = false;
 	private Bot bot;
-	public Poller(Bot bot) {
+	public Sender(Bot bot) {
 		super();
 		this.bot = bot;
 	}
@@ -27,8 +27,8 @@ public class Poller extends Thread {
 		while (true) {
 			if (!pause) {
 				try {
-					poll();
-					sleep(10000);
+					send();
+					sleep(4000);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				} catch (Exception e) {
@@ -38,11 +38,12 @@ public class Poller extends Thread {
 		}
 	}
 	
-	public void  poll() throws IOException{
-		
-		String resultJson = HttpHelper.poll(bot.getPollReq());
-		//String resultJson = HttpHelper.poll(URL_POLL+"?r="+URLEncoder.encode(bot.getPollReq())+"clientid="+bot.CLIENT_ID+"&psession="+bot.getPsessionid());
-		
-		System.out.println("poll--"+resultJson);
+
+	
+	public void send(){
+		String resultJson = HttpHelper.send(bot.getSendReq());
+		System.out.println("send--"+resultJson);
+
 	}
+	
 }

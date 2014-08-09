@@ -102,6 +102,12 @@ public class BotCookie
 
     }
 
+	public BotCookie(String key, String value) {
+		this.name = key;
+		this.value = value;
+	}
+
+
 	/**
      * @return the name
      */

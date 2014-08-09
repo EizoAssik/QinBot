@@ -192,6 +192,7 @@ public class LoginDialog extends JDialog {
 		submit.setEnabled(false);
 		submit.setText("正在登录");
 		
+		Bot.getInstance().setQq(qqTextField.getText());
 		Bot.getInstance().setPsw(pswField.getText().trim());
 		
 		boolean result;

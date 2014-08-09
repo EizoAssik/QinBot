@@ -3,6 +3,7 @@ package com.sssta.qinbot.core;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.util.Random;
@@ -12,10 +13,12 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.swing.JOptionPane;
 
+import atg.taglib.json.util.Cookie;
 import atg.taglib.json.util.JSONException;
 import atg.taglib.json.util.JSONObject;
 
 import com.sssta.qinbot.event.EventCallback;
+import com.sssta.qinbot.model.BotCookie;
 import com.sssta.qinbot.model.BotState;
 import com.sssta.qinbot.model.VerifyCodeChecker;
 import com.sssta.qinbot.util.HttpHelper;
@@ -35,12 +38,14 @@ public class Bot {
 	private BotState state = BotState.OFFLINE;
 	private String pollReqCache;
 
-	public static final String CLIENT_ID = "7776085";
+	public static final String CLIENT_ID = "33422818";
 
 	private String skey;
 	private String psessionid;
 	
 	private Poller poller = new Poller(this);
+	private Sender sender = new Sender(this);
+	private int messageID = 24220008;
 
 	public static Bot getInstance() {
 		return bot;
@@ -186,10 +191,14 @@ public class Bot {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
+			String uniString = getUni();
+			HttpHelper.addCookie(new BotCookie("p_uni",uniString));
+			HttpHelper.addCookie(new BotCookie("pt2gguni",uniString));
+			HttpHelper.addCookie(new BotCookie("uni",uniString));
+			HttpHelper.addCookie(new BotCookie("ptui_loginuni",qq));
 			//开始轮询
 			poller.start();
-			
+			sender.start();
 			return true;
 		} else {
 			JOptionPane.showMessageDialog(null, state, "警告",
@@ -208,6 +217,7 @@ public class Bot {
         String verifyString = HttpHelper.getCookie("ptvfsession");
         if (verifyString!=null) {
 	        Bot.getInstance().setVerifySession(verifyString);
+	        HttpHelper.addCookie(new BotCookie("verifysession",verifyString));
 		}
         
     	try {
@@ -231,9 +241,18 @@ public class Bot {
 	
 	public String getPollReq(){
 		if (pollReqCache == null) {
-			pollReqCache =  String.format("r:{\"clientid\":\"%s\",\"psessionid\":\"%s\",\"key\":0,\"ids\":[]}", CLIENT_ID,psessionid);
+			pollReqCache =  String.format("{\"clientid\":\"%s\",\"psessionid\":\"%s\",\"key\":0,\"ids\":[]}", CLIENT_ID,psessionid);
+			pollReqCache = "r="+URLEncoder.encode(pollReqCache)+"&clientid="+CLIENT_ID+"%psessionid"+psessionid;
+			//pollReqCache =  String.format("{\"clientid\":\"%s\",\"psessionid\":\"%s\",\"key\":0,\"ids\":[]}", CLIENT_ID,psessionid);
+			
 		}
 		return pollReqCache;
+	}
+	
+	public  String getSendReq(){
+		String content = String.format("{\"group_uin\":3551973802,\"content\":\"[\\\"自动的，。。。\\\\n\\\\n\\\",[\\\"font\\\",{\\\"name\\\":\\\"宋体\\\",\\\"size\\\":\\\"10\\\",\\\"style\\\":[0,0,0],\\\"color\\\":\\\"000000\\\"}]]\",\"msg_id\":%d,\"clientid\":\"%s\",\"psessionid\":\"%s\"}",messageID++,CLIENT_ID,psessionid);
+		content = "r="+URLEncoder.encode(content)+"&clientid="+CLIENT_ID+"%psessionid="+psessionid;
+		return content;
 	}
 
 	public String getPsessionid() {
@@ -242,6 +261,18 @@ public class Bot {
 
 	public void setPsessionid(String psessionid) {
 		this.psessionid = psessionid;
+	}
+	
+	public String getUni(){
+		StringBuffer sBuffer = new StringBuffer();
+		int length = qq.length();
+		sBuffer.append('o');
+		for (int i = 0; i < 10-length; i++) {
+			sBuffer.append('0');
+		}
+		sBuffer.append(qq);
+		return sBuffer.toString();
+		
 	}
 	
 }
