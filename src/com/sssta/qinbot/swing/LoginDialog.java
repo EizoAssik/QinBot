@@ -6,16 +6,13 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.util.Random;
 
-import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -73,14 +70,14 @@ public class LoginDialog extends JDialog {
 	private void checkLogin(){
 		if(!qqTextField.getText().trim().equals("") && loginSig!=null){
 			submit.setEnabled(true);
-			submit.setText("登陆");
+			submit.setText("登录");
 			imgLabel.setText("正在加载");
 			//开新线程来获取验证码
 			new Thread(new Runnable() {
 				@Override
 				public void run() {
 						Bot.getInstance().setQq(qqTextField.getText().trim());
-						HttpHelper.checkLogin(new EventCallback() {
+						Bot.checkLogin(new EventCallback() {
 							@Override
 							public void exec(boolean succeed) {
 								if (succeed) {
@@ -193,7 +190,7 @@ public class LoginDialog extends JDialog {
 		}
 		
 		submit.setEnabled(false);
-		submit.setText("正在登陆");
+		submit.setText("正在登录");
 		
 		Bot.getInstance().setPsw(pswField.getText().trim());
 		
@@ -211,6 +208,7 @@ public class LoginDialog extends JDialog {
 			//登陆成功，显示主窗口；
 			dispose();
 			mainWindow.setVisible(true);
+			mainWindow.loadData();
 		}
 				
 	}

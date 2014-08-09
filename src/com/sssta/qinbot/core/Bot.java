@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.net.URLEncoder;
+import java.text.ParseException;
+import java.util.Random;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -13,6 +15,7 @@ import javax.swing.JOptionPane;
 import atg.taglib.json.util.JSONException;
 import atg.taglib.json.util.JSONObject;
 
+import com.sssta.qinbot.event.EventCallback;
 import com.sssta.qinbot.model.BotState;
 import com.sssta.qinbot.model.VerifyCodeChecker;
 import com.sssta.qinbot.util.HttpHelper;
@@ -30,11 +33,14 @@ public class Bot {
 	private String ptwebqq;
 	private String vfwebqq;
 	private BotState state = BotState.OFFLINE;
+	private String pollReqCache;
 
-	private static final String CLIENT_ID = "7776085";
+	public static final String CLIENT_ID = "7776085";
 
 	private String skey;
 	private String psessionid;
+	
+	private Poller poller = new Poller(this);
 
 	public static Bot getInstance() {
 		return bot;
@@ -122,6 +128,7 @@ public class Bot {
 		String uni = getQqHex();
 		String vcode = vCode.equals("") ? getVcReqCode() : vCode;
 		
+		//System.out.println(psw+"   "+uni+"   "+vCode);
 		//通过pass.js计算出加密后的密码p
 		String p = "";
 		ScriptEngineManager m = new ScriptEngineManager();
@@ -131,7 +138,7 @@ public class Bot {
 			se.eval(new FileReader(
 					new File("src/com/sssta/qinbot/util/pass.js")));
 			Object t = se.eval("getEncryption(\"" + psw + "\",\"" + uni
-					+ "\",\"" + vcode.toUpperCase() + "\");");
+					+ "\",\"" + vcode + "\");");
 			p = t.toString();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -141,9 +148,14 @@ public class Bot {
 		
 		//发起第一次登陆请求
 		String resultString = HttpHelper.sendGet(
-				String.format(HttpHelper.URL_FORMAT_LOGIN,getQQ(), p,
-						vcode.toUpperCase(),getLoginSig(),
-						getVerifySession()), HttpHelper.URL_REFER_Q);
+				String.format(
+						HttpHelper.URL_FORMAT_LOGIN,
+						getQQ(), 
+						p,
+						vcode.toUpperCase(),
+						getLoginSig(),
+						getVerifySession()),
+				HttpHelper.URL_REFER_Q);
 		//解析登陆请求返回的信息，若请求成功并且在里面进行第二次登陆回调来获取最后所需要的Cookie；
 		String state = ResponseParser.parseLogin(resultString);
 		if (state.contains("登录成功")) {
@@ -162,7 +174,7 @@ public class Bot {
 			String res = HttpHelper
 					.sendPost(channelLoginUrl, content,
 							"http://d.web2.qq.com/proxy.html?v=20110331002&callback=1&id=2");// post
-			//System.out.println("\n  " + ptwebqq + "   " + res);
+			System.out.println("\n  " + ptwebqq + "   " + res);
 			JSONObject rootObject = null;
 			try {
 				//抓取重要的两个值，用于发送信息
@@ -174,15 +186,62 @@ public class Bot {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			
+			//开始轮询
+			poller.start();
+			
 			return true;
 		} else {
 			JOptionPane.showMessageDialog(null, state, "警告",
 					JOptionPane.WARNING_MESSAGE);
+			HttpHelper.clearCookieCache();
 			return false;
 		}
 	}
+	
+	public static void checkLogin(EventCallback event){
+    	String responseString = HttpHelper.sendGet(String.format(HttpHelper.URL_FORMAT_CHECK,
+    			Bot.getInstance().getQQ()
+    			,Bot.getInstance().getLoginSig()
+    			,new Random().nextDouble()),HttpHelper.URL_REFER_Q);
+    	
+        String verifyString = HttpHelper.getCookie("ptvfsession");
+        if (verifyString!=null) {
+	        Bot.getInstance().setVerifySession(verifyString);
+		}
+        
+    	try {
+			VerifyCodeChecker checker = ResponseParser.parseVC(responseString);
+				if(event!=null){
+					event.exec(checker.isNeed());
+					Bot.getInstance().attachChecker(checker);
+				}
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
 
 	private void setState(BotState state) {
 		this.state = state;
+		if (state == BotState.OFFLINE) {
+			pollReqCache = null;
+		}
 	}
+	
+	public String getPollReq(){
+		if (pollReqCache == null) {
+			pollReqCache =  String.format("r:{\"clientid\":\"%s\",\"psessionid\":\"%s\",\"key\":0,\"ids\":[]}", CLIENT_ID,psessionid);
+		}
+		return pollReqCache;
+	}
+
+	public String getPsessionid() {
+		return psessionid;
+	}
+
+	public void setPsessionid(String psessionid) {
+		this.psessionid = psessionid;
+	}
+	
 }
