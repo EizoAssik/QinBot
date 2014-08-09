@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.net.URLEncoder;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -19,7 +17,6 @@ import com.sssta.qinbot.model.BotState;
 import com.sssta.qinbot.model.VerifyCodeChecker;
 import com.sssta.qinbot.util.HttpHelper;
 import com.sssta.qinbot.util.ResponseParser;
-import com.sun.codemodel.internal.JOp;
 
 public class Bot {
 	private String qq;

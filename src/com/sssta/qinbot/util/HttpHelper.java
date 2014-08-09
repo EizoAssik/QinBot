@@ -10,7 +10,6 @@ import java.net.URL;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Random;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -18,11 +17,9 @@ import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 
-import sun.net.www.http.HttpClient;
-
-import com.sssta.qinbot.Event.EventCallback;
 import com.sssta.qinbot.core.Bot;
-import com.sssta.qinbot.model.Cookie;
+import com.sssta.qinbot.event.EventCallback;
+import com.sssta.qinbot.model.BotCookie;
 import com.sssta.qinbot.model.VerifyCodeChecker;
 
 
@@ -38,7 +35,7 @@ public class HttpHelper {
       //u qq号 p 加密码  verifycode   login_sig    verifysession
     public static final String URL_FORMAT_LOGIN = "https://ssl.ptlogin2.qq.com/login?u=%s&p=%s&verifycode=%s&webqq_type=10&remember_uin=1&login2qq=1&aid=1003903&u1=http%%3A%%2F%%2Fweb2.qq.com%%2Floginproxy.html%%3Flogin2qq%%3D1%%26webqq_type%%3D10&h=1&ptredirect=0&ptlang=2052&daid=164&from_ui=1&pttype=1&dumy=&fp=loginerroralert&action=6-31-678356&mibao_css=m_webqq&t=1&g=1&js_type=0&js_ver=10088&login_sig=%s&pt_uistyle=5&pt_vcode_v1=0&pt_verifysession_v1=%s";
     
-    private static HashMap<String, Cookie> cookieMap = new HashMap<String, Cookie>();
+    private static HashMap<String, BotCookie> cookieMap = new HashMap<String, BotCookie>();
 	private static StringBuilder cookieCache = new StringBuilder();
 
 	
@@ -68,7 +65,7 @@ public class HttpHelper {
 	              
 	            if(conn.getHeaderFields().get("Set-Cookie") != null){  
 	                for(String s:conn.getHeaderFields().get("Set-Cookie")){  
-	                    addCookie(new Cookie(s));
+	                    addCookie(new BotCookie(s));
 	                }  
 	            }  
 	              
@@ -134,7 +131,7 @@ public class HttpHelper {
 	             
 	            if(conn.getHeaderFields().get("Set-Cookie") != null){  
 	                for(String s:conn.getHeaderFields().get("Set-Cookie")){  
-	                    addCookie(new Cookie(s));
+	                    addCookie(new BotCookie(s));
 	                }  
 	            }  
 	            System.out.println("跳转后——"+conn.getURL().getPath());
@@ -222,7 +219,7 @@ public class HttpHelper {
 	             
 	            if(conn.getHeaderFields().get("Set-Cookie") != null){  
 	                for(String s:conn.getHeaderFields().get("Set-Cookie")){  
-	                    addCookie(new Cookie(s));
+	                    addCookie(new BotCookie(s));
 	                }  
 	                
 	   	           	Bot.getInstance().setVerifySession(cookieMap.get("verifysession").getValue());
@@ -270,7 +267,7 @@ public class HttpHelper {
 	    	return cookieCache.toString();
 	    }
 	    
-	    public static void addCookie(Cookie cookie){
+	    public static void addCookie(BotCookie cookie){
 	    	cookieMap.put(cookie.getName(), cookie);
     		cookieCache.append(cookie.getName()).append("=").append(cookie.getValue()).append(";");
 	    }

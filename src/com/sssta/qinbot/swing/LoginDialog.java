@@ -20,8 +20,8 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-import com.sssta.qinbot.Event.EventCallback;
 import com.sssta.qinbot.core.Bot;
+import com.sssta.qinbot.event.EventCallback;
 import com.sssta.qinbot.util.HttpHelper;
 
 public class LoginDialog extends JDialog {

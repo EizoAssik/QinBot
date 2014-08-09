@@ -1,4 +1,4 @@
-package com.sssta.qinbot.Event;
+package com.sssta.qinbot.event;
 
 
 public interface EventCallback {
