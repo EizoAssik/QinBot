@@ -80,8 +80,26 @@ public class UTCyrpt extends TestCase {
         return p;
     }
 
+    public static String jsGetHash(String uin, String ptwebqq) {
+        ptwebqq = null == ptwebqq ? "" : ptwebqq;
+        uin = null == uin ? "" : uin;
+        String p = null;
+        ScriptEngineManager m = new ScriptEngineManager();
+        ScriptEngine se = m.getEngineByName("javascript");
+        try {
+            se.eval(new FileReader(
+                    new File("src/com/sssta/qinbot/util/pass.js")));
+            Object t = se.eval("hash_get(\"" + uin + "\",\"" + ptwebqq + "\");");
+            p = t.toString();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (ScriptException e) {
+            e.printStackTrace();
+        }
+        return p;
+    }
+
     static String nextRandomString(int len) {
-//        int len = random.nextInt(max_len);
         char[] chars = new char[len];
         for (int i = 0; i < len; i++) {
             chars[i] = B64.charAt(random.nextInt(64));
@@ -91,10 +109,16 @@ public class UTCyrpt extends TestCase {
 
     static String nextRandomUin() {
         long value = random.nextLong();
-        String retval="";
+        String retval = "";
         long mask = 0xFF;
+        long digit;
         for (int i = 0; i < 8; i++) {
-            retval = String.format("\\x%02x", ((mask & value) >> (8 * i))).concat(retval);
+            digit = (mask & value) >> (8 * i);
+            // FIXME I do not know why but this just happens...
+            if (String.format("%02x", digit).length() != 2) {
+                return nextRandomUin();
+            }
+            retval = String.format("\\x%02x", digit).concat(retval);
             mask <<= 8;
         }
         return retval;
@@ -122,15 +146,23 @@ public class UTCyrpt extends TestCase {
     }
 
     public void testEncryption() {
-//        assertEquals("Empty", jsEncryption(EMPTY, EMPTY, EMPTY), Cyrpt.getEncryption(EMPTY, EMPTY, EMPTY));
-//        assertEquals("null", jsEncryption(null, null, null), Cyrpt.getEncryption(null, null, null));
-//        assertEquals("B64", jsEncryption(B64, B64, B64), Cyrpt.getEncryption(B64, B64, B64));
         for (int i = 0; i < 10; i++) {
             String pw = nextRandomString(32);
             String uin = nextRandomUin();
             String v = nextRandomString(4);
             String msg = String.format("RandomString@%s-%s-%s", pw, uin, v);
             assertEquals(msg, jsEncryption(pw, uin, v), Cyrpt.getEncryption(pw, uin, v));
+        }
+    }
+
+    public void testGetHash() {
+        for (int i = 0; i < 10; i++) {
+            String uin = nextRandomUin();
+            String pt = nextRandomString(9);
+            String msg = String.format("RandomTest@%s-%s", uin, pt);
+            String js = jsGetHash(uin, pt);
+            String nat = Cyrpt.getHash(uin, pt);
+            assertEquals(msg, js, nat);
         }
     }
 }
