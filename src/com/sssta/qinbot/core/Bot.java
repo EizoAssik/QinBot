@@ -5,11 +5,9 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Random;
-import java.util.Set;
 
 import javax.swing.JOptionPane;
 
-import atg.taglib.json.JsonObjectTag;
 import atg.taglib.json.util.JSONArray;
 import atg.taglib.json.util.JSONException;
 import atg.taglib.json.util.JSONObject;
@@ -147,6 +145,7 @@ public class Bot {
 		//发起第一次登陆请求
 		
 		//获取密码hash码
+
 		String p = Cyrpt.getEncryption(psw, uin, vcode);
 		
 		HashMap<String, String> properties = new HashMap<String, String>();
@@ -230,8 +229,8 @@ public class Bot {
 
 	private void getFriendRealQQ() {
 		HashMap<String, String> properties = new HashMap<String, String>();
-		properties.put(PROPERTY_REFER,URL_REFER_GET_INFO);
-		properties.put(PROPERTY_ACCEPT,"*/*");
+		properties.put(PROPERTY_REFER, URL_REFER_GET_INFO);
+		properties.put(PROPERTY_ACCEPT, "*/*");
 		properties.put(PROPERTY_ACCEPT_ENCODING, "gzip,deflate,sdch");
 		properties.put(PROPERTY_CONNECTION,"keep-alive");
 		properties.put(PROPERTY_HOST, "s.web2.qq.com");
@@ -266,7 +265,7 @@ public class Bot {
 
 	private void updateFriends() {
 		
-		String content = String.format("{\"h\":\"hello\",\"hash\":\"%s\",\"vfwebqq\":\"%s\"}",Cyrpt.getHash(ptwebqq, qq),vfwebqq);
+		String content = String.format("{\"h\":\"hello\",\"hash\":\"%s\",\"vfwebqq\":\"%s\"}",Cyrpt.getHash(qq, ptwebqq),vfwebqq);
 		content = "r="+URLEncoder.encode(content);
 		
 		HashMap<String, String> properties = new HashMap<String, String>();
@@ -319,7 +318,7 @@ public class Bot {
 
 	private void updateGroups() {
 		
-		String content = String.format("{\"hash\":\"%s\",\"vfwebqq\":\"%s\"}",Cyrpt.getHash(ptwebqq, qq),vfwebqq);
+		String content = String.format("{\"hash\":\"%s\",\"vfwebqq\":\"%s\"}",Cyrpt.getHash(qq, ptwebqq),vfwebqq);
 		content = "r="+URLEncoder.encode(content);
 		
 		HashMap<String, String> properties = new HashMap<String, String>();
