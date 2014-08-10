@@ -1,7 +1,8 @@
 package com.sssta.qinbot.model;
 
 public class Friend {
-	private String uni;
+	private String qq;
+	private String uin;
 	private int friendFlag;
 	private int infoFlag;
 	private String nickName;
@@ -9,11 +10,18 @@ public class Friend {
 	private String markName;
 	private int face;
 	private int markNameType;
-	public String getUni() {
-		return uni;
+	
+	public String getQQ() {
+		return qq;
 	}
-	public void setUni(String uni) {
-		this.uni = uni;
+	public void setQQ(String qq) {
+		this.qq = qq;
+	}
+	public String getUin() {
+		return uin;
+	}
+	public void setUin(String uni) {
+		this.uin = uni;
 	}
 	public int getFriendFlag() {
 		return friendFlag;

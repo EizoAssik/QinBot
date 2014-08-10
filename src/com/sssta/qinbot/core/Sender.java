@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.HashMap;
 
-
+import com.sssta.qinbot.model.Group;
 import com.sssta.qinbot.util.HttpHelper;
 
 public class Sender extends Thread {
@@ -37,7 +37,7 @@ public class Sender extends Thread {
 			if (!pause) {
 				try {
 					//send();
-					sleep(1000);
+					sleep(3000);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				} catch (Exception e) {
@@ -49,6 +49,7 @@ public class Sender extends Thread {
 	
 	public void send(){
 		if (bot.getGroups().size()>0) {
+			
 			HashMap<String, String> properties = new HashMap<String, String>();
 			properties.put(PROPERTY_ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
 			properties.put(PROPERTY_REFER, URL_REFER_POLL);
@@ -59,8 +60,10 @@ public class Sender extends Thread {
 			properties.put(PROPERTY_ACCEPT_LANGUAGE, "zh-CN,zh;q=0.8");
 			properties.put(PROPERTY_HOST, "d.web2.qq.com");
 			properties.put(PROPERTY_ORIGIN, "http://d.web2.qq.com");
-
-			String resultJson = HttpHelper.sendPost(HttpHelper.URL_SEND_GROUP,bot.getSendGrouopReqData((bot.getGroups().get(0).getUni())),properties);
+			Group group = bot.getGroups().entrySet().iterator().next().getValue();
+			System.out.println("uin-"+group.getUin());
+			System.out.println("code-"+group.getCode());
+			String resultJson = HttpHelper.sendPost(HttpHelper.URL_SEND_GROUP,bot.getSendGrouopReqData((group.getUin())),properties);
 			System.out.println("send--"+resultJson);
 		}
 		

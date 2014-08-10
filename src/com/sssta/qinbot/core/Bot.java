@@ -3,10 +3,13 @@ package com.sssta.qinbot.core;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Random;
+import java.util.Set;
 
 import javax.swing.JOptionPane;
 
+import atg.taglib.json.JsonObjectTag;
 import atg.taglib.json.util.JSONArray;
 import atg.taglib.json.util.JSONException;
 import atg.taglib.json.util.JSONObject;
@@ -135,14 +138,17 @@ public class Bot {
 	}
 
 	public boolean login(String vCode) {
-		String psw = getPsw();
-		String uni = getQqHex();
+		
+		if (state == BotState.ONLINE) {
+			return true;
+		}
+		String uin = getQqHex();
 		String vcode = vCode.equals("") ? getVcReqCode() : vCode;
 		
 		//发起第一次登陆请求
 		
 		//获取密码hash码
-		String p = Cyrpt.getEncryption(psw, uni, vcode);
+		String p = Cyrpt.getEncryption(psw, uin, vcode);
 		
 		HashMap<String, String> properties = new HashMap<String, String>();
 		properties.put(PROPERTY_ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
@@ -194,11 +200,11 @@ public class Bot {
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
-			String uniString = getUni();
-			addCookie(new BotCookie("p_uni",uniString));
-			addCookie(new BotCookie("pt2gguni",uniString));
-			addCookie(new BotCookie("uni",uniString));
-			addCookie(new BotCookie("ptui_loginuni",qq));
+			String uinString = getUin();
+			addCookie(new BotCookie("p_uin",uinString));
+			addCookie(new BotCookie("pt2gguin",uinString));
+			addCookie(new BotCookie("uin",uinString));
+			addCookie(new BotCookie("ptui_loginuin",qq));
 			
 			//初始化用户，群组，讨论组列表
 			initInfo();
@@ -219,6 +225,40 @@ public class Bot {
 		updateGroups();
 		updateFriends();
 		updateDiscussGroups();
+		
+		getFriendRealQQ();
+	}
+
+	private void getFriendRealQQ() {
+		HashMap<String, String> properties = new HashMap<String, String>();
+		properties.put(PROPERTY_REFER,URL_REFER_GET_INFO);
+		properties.put(PROPERTY_ACCEPT,"*/*");
+		properties.put(PROPERTY_ACCEPT_ENCODING, "gzip,deflate,sdch");
+		properties.put(PROPERTY_CONNECTION,"keep-alive");
+		properties.put(PROPERTY_HOST, "s.web2.qq.com");
+		properties.put(PROPERTY_ORIGIN, "http://s.web2.qq.com");
+		
+		Iterator<String> iterator = friends.keySet().iterator();
+		while (iterator.hasNext()) {
+			String key = iterator.next();
+			String content = String.format(URL_FORMAT_GET_FRIEND_QQ, key,verifySession,vfwebqq,System.currentTimeMillis());
+			String resultString = sendGet(content, properties);
+			System.out.println(resultString);
+
+			try {
+				JSONObject base = new JSONObject(resultString);
+				if (base.optInt("retcode",-1) == 0) {
+					JSONObject result = base.optJSONObject("result");
+					Friend friend = friends.get(key);
+					friend.setQQ(result.optString("account",friend.getUin()));
+				}
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		}
+		
 	}
 
 	private void updateDiscussGroups() {
@@ -233,7 +273,6 @@ public class Bot {
 		HashMap<String, String> properties = new HashMap<String, String>();
 		properties.put(PROPERTY_ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
 		properties.put(PROPERTY_REFER,URL_REFER_GET_INFO);
-		properties.put(PROPERTY_ACCEPT,"*/*");
 		properties.put(PROPERTY_ACCEPT_ENCODING, "gzip,deflate,sdch");
 		properties.put(PROPERTY_CONTETN_TYPE, "application/x-www-form-urlencoded");
 		properties.put(PROPERTY_CONNECTION,"keep-alive");
@@ -251,16 +290,16 @@ public class Bot {
 				for (int i = 0; i < friendsArray.length(); i++) {
 					JSONObject friendObject = friendsArray.optJSONObject(i);
 					Friend friend = new Friend();
-					friend.setUni(friendObject.optString("uni"));
+					friend.setUin(friendObject.optString("uin"));
 					friend.setFriendFlag(friendObject.optInt("flag"));
 					friend.setCategories(friendObject.optInt("categories"));
-					friends.put(friend.getUni(), friend);
+					friends.put(friend.getUin(), friend);
 				}
 				
 				JSONArray infoArray = resultObject.optJSONArray("info");
 				for (int i = 0; i < infoArray.length(); i++) {
 					JSONObject infoObject = infoArray.optJSONObject(i);
-					Friend friend = friends.get(infoObject.optString("uni"));
+					Friend friend = friends.get(infoObject.optString("uin"));
 					friend.setFace(infoObject.optInt("face"));
 					friend.setInfoFlag(infoObject.optInt("flag"));
 					friend.setNickName(infoObject.optString("nick"));
@@ -269,7 +308,7 @@ public class Bot {
 				JSONArray markNameArray = resultObject.optJSONArray("marknames");
 				for (int i = 0; i < markNameArray.length(); i++) {
 					JSONObject infoObject = markNameArray.optJSONObject(i);
-					Friend friend = friends.get(infoObject.optString("uni"));
+					Friend friend = friends.get(infoObject.optString("uin"));
 					friend.setMarkName(infoObject.optString("markname"));
 					friend.setMarkNameType(infoObject.optInt("type"));
 				}
@@ -354,7 +393,7 @@ public class Bot {
 		this.psessionid = psessionid;
 	}
 	
-	public String getUni(){
+	public String getUin(){
 		StringBuffer sBuffer = new StringBuffer();
 		int length = qq.length();
 		sBuffer.append('o');
@@ -375,8 +414,8 @@ public class Bot {
 		return pollReqCache;
 	}
 	
-	public  String getSendGrouopReqData(String group_uni){
-		String content = String.format("{\"group_uin\":%s,\"content\":\"[\\\"诚信诚念博导好，Java大法保平安\\\\n\\\\n\\\",[\\\"font\\\",{\\\"name\\\":\\\"宋体\\\",\\\"size\\\":\\\"10\\\",\\\"style\\\":[0,0,0],\\\"color\\\":\\\"000000\\\"}]]\",\"msg_id\":%d,\"clientid\":\"%s\",\"psessionid\":\"%s\"}",group_uni,messageID++,CLIENT_ID,psessionid);
+	public  String getSendGrouopReqData(String group_uin){
+		String content = String.format("{\"group_uin\":%s,\"content\":\"[\\\"测试\\\",[\\\"font\\\",{\\\"name\\\":\\\"宋体\\\",\\\"size\\\":\\\"10\\\",\\\"style\\\":[0,0,0],\\\"color\\\":\\\"000000\\\"}]]\",\"msg_id\":%d,\"clientid\":\"%s\",\"psessionid\":\"%s\"}",group_uin,messageID++,CLIENT_ID,psessionid);
 		content = "r="+URLEncoder.encode(content)+"&clientid="+CLIENT_ID+"%psessionid="+psessionid;
 		return content;
 	}

@@ -26,16 +26,16 @@ public class Cyrpt {
      * Just keep the interface
      *
      * @param password password
-     * @param uni      uni
+     * @param uin      uin
      * @param vcode    vcode
      * @return Hashed String
      */
-    static public String getEncryption(String password, String uni, String vcode) {
+    static public String getEncryption(String password, String uin, String vcode) {
         password = null == password ? "" : password;
-        uni = null == uni ? "" : uni;
+        uin = null == uin ? "" : uin;
         vcode = null == vcode ? "" : vcode;
 //        String pw_md5 = hexchar2bin(md5(password));
-//        String pu_md5 = md5(pw_md5 + uni);
+//        String pu_md5 = md5(pw_md5 + uin);
 //        String hashed = md5(pu_md5 + vcode.toUpperCase());
 //        return hashed;
         String p = null;
@@ -48,7 +48,7 @@ public class Cyrpt {
 						new File("src/com/sssta/qinbot/util/pass.js")));
 			}
 			
-			Object t = jsEngine.eval("getEncryption(\"" + password + "\",\"" + uni
+			Object t = jsEngine.eval("getEncryption(\"" + password + "\",\"" + uin
 					+ "\",\"" + vcode + "\");");
 			p = t.toString();
 		} catch (FileNotFoundException e) {
@@ -60,9 +60,9 @@ public class Cyrpt {
         
     }
     
-    public static String getHash(String ptwebqq,String uni){
+    public static String getHash(String ptwebqq,String uin){
     	ptwebqq = null == ptwebqq?"":ptwebqq;
-    	uni = null == uni?"":uni;
+    	uin = null == uin?"":uin;
     	String p = "";
 		try {
 			if (jsEngine == null) {
@@ -71,7 +71,7 @@ public class Cyrpt {
 						new File("src/com/sssta/qinbot/util/pass.js")));
 			}
 			
-			Object t = jsEngine.eval("hash_get(\"" + uni + "\",\"" + ptwebqq + "\");");
+			Object t = jsEngine.eval("hash_get(\"" + uin + "\",\"" + ptwebqq + "\");");
 			p = t.toString();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();

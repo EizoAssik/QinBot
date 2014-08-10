@@ -18,8 +18,8 @@ public abstract class Message {
 	public static final String TYPE_NORMAL = "message";
 	private static final String CONTENT = "content";
 	private static final String TIME = "time";
-	private static final String FROM = "from_uni";
-	private static final String TO = "to_uni";
+	private static final String FROM = "from_uin";
+	private static final String TO = "to_uin";
 	private static final String MSG_ID = "msg_id";
 	private static final String MSG_ID2 = "msg_id2";
 	private static final String MSG_TYPE = "msg_type";
