@@ -314,7 +314,7 @@ public class Bot {
 	}
 	
 	public String getGroupListReqData(){
-		String content = String.format("{\"hash\":\"%s\",\"vtwebqq\":\"%s\"}",FunnyHash.getNewbiHash(ptwebqq, getQqHex()),vfwebqq);
+		String content = String.format("{\"hash\":\"%s\",\"vfwebqq\":\"%s\"}",FunnyHash.getNewbiHash(ptwebqq, qq),vfwebqq);
 		content = "r="+URLEncoder.encode(content);
 		return content;
 	}

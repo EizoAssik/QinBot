@@ -70,6 +70,6 @@ public class MainWindow extends JFrame  {
 	}
 
 	public void loadData() {
-		avater.setIcon(new ImageIcon(HttpHelper.getImage(String.format("http://face7.web.qq.com/cgi/svr/face/getface?cache=1&type=11&fid=0&uin=3024181766&vfwebqq=%s&t=%f", Bot.getInstance().getVfwebqq(),System.currentTimeMillis()), null, null)));
+		avater.setIcon(new ImageIcon(HttpHelper.getImage(String.format("http://face7.web.qq.com/cgi/svr/face/getface?cache=1&type=11&fid=0&uin=3024181766&vfwebqq=%s&t=%d", Bot.getInstance().getVfwebqq(),System.currentTimeMillis()), null, null)));
 	}
 }
