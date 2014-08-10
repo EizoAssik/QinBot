@@ -9,6 +9,9 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import org.jruby.javasupport.bsf.JRubyEngine;
+import org.jruby.util.JRubyFile;
+
 public class FunnyHash {
 	public static String getPswHash(String psw, String uni, String vcode) {
 		// 通过pass.js计算出加密后的密码p
@@ -31,20 +34,18 @@ public class FunnyHash {
 	}
 	
 	public static  String getNewbiHash(String ptwebqq,String uni){
-		String hash = null;
-		ScriptEngineManager manager = new ScriptEngineManager();
-	    ScriptEngine se = manager.getEngineByName("jruby");
-	 
-	    try {
-			se.eval(new FileReader(
-					new File("src/com/sssta/qinbot/util/hash.rb")));
-		    Object t = se.eval("hash_get(\"" + uni + "\",\"" + ptwebqq+ "\");");
-		    hash = t.toString();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (ScriptException e) {
-			e.printStackTrace();
+		StringBuffer sBuffer = new StringBuffer();
+		String n = ptwebqq+"password error";
+		while (sBuffer.length() < n.length()) {
+			sBuffer.append(uni);
 		}
-		return hash;
+		
+		StringBuffer hash  = new StringBuffer();
+		for (int i = 0; i < n.length(); i++) {
+			hash.append(String.format("%02X", ((int)sBuffer.charAt(i))^((int)n.charAt(i))));
+		}
+		
+		System.out.println(hash.toString());
+		return hash.toString();
 	}
 }

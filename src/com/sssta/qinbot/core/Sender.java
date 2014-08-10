@@ -41,7 +41,7 @@ public class Sender extends Thread {
 
 	
 	public void send(){
-		String resultJson = HttpHelper.send(bot.getSendReq());
+		String resultJson = HttpHelper.send(bot.getSendGrouopReqData());
 		System.out.println("send--"+resultJson);
 
 	}

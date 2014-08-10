@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Random;
 
 import javax.script.ScriptEngine;
@@ -14,16 +15,21 @@ import javax.script.ScriptException;
 import javax.swing.JOptionPane;
 
 import atg.taglib.json.util.Cookie;
+import atg.taglib.json.util.JSONArray;
 import atg.taglib.json.util.JSONException;
 import atg.taglib.json.util.JSONObject;
 
 import com.sssta.qinbot.event.EventCallback;
 import com.sssta.qinbot.model.BotCookie;
 import com.sssta.qinbot.model.BotState;
+import com.sssta.qinbot.model.DiscussGroup;
+import com.sssta.qinbot.model.Friend;
+import com.sssta.qinbot.model.Group;
 import com.sssta.qinbot.model.VerifyCodeChecker;
 import com.sssta.qinbot.util.FunnyHash;
 import com.sssta.qinbot.util.HttpHelper;
 import com.sssta.qinbot.util.ResponseParser;
+import com.sun.tools.javac.util.List;
 
 public class Bot {
 	private String qq;
@@ -47,7 +53,11 @@ public class Bot {
 	private Poller poller = new Poller(this);
 	private Sender sender = new Sender(this);
 	private int messageID = 24220008;
-
+	
+	private ArrayList<Group> groups = new ArrayList<Group>();
+	private ArrayList<Friend> friends = new ArrayList<Friend>();
+	private ArrayList<DiscussGroup> discussGroups = new ArrayList<DiscussGroup>();
+	
 	public static Bot getInstance() {
 		return bot;
 	}
@@ -182,6 +192,10 @@ public class Bot {
 			HttpHelper.addCookie(new BotCookie("pt2gguni",uniString));
 			HttpHelper.addCookie(new BotCookie("uni",uniString));
 			HttpHelper.addCookie(new BotCookie("ptui_loginuni",qq));
+			
+			//初始化用户，群组，讨论组列表
+			initInfo();
+			
 			//开始轮询
 			poller.start();
 			sender.start();
@@ -194,6 +208,39 @@ public class Bot {
 		}
 	}
 	
+	private void initInfo() {
+		getGroups();
+		getFriends();
+		getDiscussGroups();
+	}
+
+	private void getDiscussGroups() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void getFriends() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void getGroups() {
+		String resultString = HttpHelper.getGroupNameList(getGroupListReqData());
+		try {
+			JSONObject base = new JSONObject(resultString);
+			if (base.optInt("retcode",-1) == 0) {
+				JSONArray groupArray = base.optJSONObject("result").optJSONArray("gnamelist");
+				for (int i = 0; i < groupArray.length(); i++) {
+					groups.add(new Group(groupArray.optJSONObject(i)));
+				}
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+
 	public static void checkLogin(EventCallback event){
     	String responseString = HttpHelper.sendGet(String.format(HttpHelper.URL_FORMAT_CHECK,
     			Bot.getInstance().getQQ()
@@ -225,21 +272,6 @@ public class Bot {
 		}
 	}
 	
-	public String getPollReq(){
-		if (pollReqCache == null) {
-			pollReqCache =  String.format("{\"clientid\":\"%s\",\"psessionid\":\"%s\",\"key\":0,\"ids\":[]}", CLIENT_ID,psessionid);
-			pollReqCache = "r="+URLEncoder.encode(pollReqCache)+"&clientid="+CLIENT_ID+"%psessionid"+psessionid;
-			//pollReqCache =  String.format("{\"clientid\":\"%s\",\"psessionid\":\"%s\",\"key\":0,\"ids\":[]}", CLIENT_ID,psessionid);
-			
-		}
-		return pollReqCache;
-	}
-	
-	public  String getSendReq(){
-		String content = String.format("{\"group_uin\":3551973802,\"content\":\"[\\\"自动的，。。。\\\\n\\\\n\\\",[\\\"font\\\",{\\\"name\\\":\\\"宋体\\\",\\\"size\\\":\\\"10\\\",\\\"style\\\":[0,0,0],\\\"color\\\":\\\"000000\\\"}]]\",\"msg_id\":%d,\"clientid\":\"%s\",\"psessionid\":\"%s\"}",messageID++,CLIENT_ID,psessionid);
-		content = "r="+URLEncoder.encode(content)+"&clientid="+CLIENT_ID+"%psessionid="+psessionid;
-		return content;
-	}
 
 	public String getPsessionid() {
 		return psessionid;
@@ -259,6 +291,32 @@ public class Bot {
 		sBuffer.append(qq);
 		return sBuffer.toString();
 		
+	}
+	
+
+	public String getPollReqData(){
+		if (pollReqCache == null) {
+			pollReqCache =  String.format("{\"clientid\":\"%s\",\"psessionid\":\"%s\",\"key\":0,\"ids\":[]}", CLIENT_ID,psessionid);
+			pollReqCache = "r="+URLEncoder.encode(pollReqCache)+"&clientid="+CLIENT_ID+"%psessionid"+psessionid;
+			//pollReqCache =  String.format("{\"clientid\":\"%s\",\"psessionid\":\"%s\",\"key\":0,\"ids\":[]}", CLIENT_ID,psessionid);
+			
+		}
+		return pollReqCache;
+	}
+	
+	public  String getSendGrouopReqData(){
+		if (groups.size() == 0) {
+			return "";
+		}
+		String content = String.format("{\"group_uin\":%s,\"content\":\"[\\\"自动的，。。。\\\\n\\\\n\\\",[\\\"font\\\",{\\\"name\\\":\\\"宋体\\\",\\\"size\\\":\\\"10\\\",\\\"style\\\":[0,0,0],\\\"color\\\":\\\"000000\\\"}]]\",\"msg_id\":%d,\"clientid\":\"%s\",\"psessionid\":\"%s\"}",groups.get(0).getUni(),messageID++,CLIENT_ID,psessionid);
+		content = "r="+URLEncoder.encode(content)+"&clientid="+CLIENT_ID+"%psessionid="+psessionid;
+		return content;
+	}
+	
+	public String getGroupListReqData(){
+		String content = String.format("{\"hash\":\"%s\",\"vtwebqq\":\"%s\"}",FunnyHash.getNewbiHash(ptwebqq, getQqHex()),vfwebqq);
+		content = "r="+URLEncoder.encode(content);
+		return content;
 	}
 	
 }
