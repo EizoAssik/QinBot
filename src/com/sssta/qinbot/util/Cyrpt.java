@@ -25,7 +25,7 @@ public class Cyrpt {
         uni = null == uni ? "" : uni;
         vcode = null == vcode ? "" : vcode;
         String pw_md5 = hexchar2bin(md5(password));
-        String pu_md5 = md5(pw_md5 + uni);
+        String pu_md5 = md5(pw_md5 + hackUin(uni));
         String hashed = md5(pu_md5 + vcode.toUpperCase());
         return hashed;
     }
@@ -202,6 +202,12 @@ public class Cyrpt {
         return str;
     }
 
+    /**
+     * padding zeros manually to compatible the JS Arrays' feature
+     * while during undefined indexes
+     * @param  array the array given to core_md5
+     * @return properly padded array
+     */
     static int[] fit_with_zero(int[] array) {
         int new_len = array.length;
         while (new_len % 16 != 0)
@@ -210,11 +216,31 @@ public class Cyrpt {
         System.arraycopy(array, 0, new_array, 0, array.length);
         return new_array;
     }
-    static String hexchar2bin(String str) {
-        String retval="";
+
+    /**
+     * rewrites the function in JS
+     * different code, but these has same output as the JS one
+     * @param str hex string
+     * @return    hex -> ASCII String
+     */
+    static public String hexchar2bin(String str) {
+        char[] chars = new char[str.length()/2];
         for (int i = 0; i < str.length(); i += 2) {
-            retval += "\\x" + str.substring(i, i+2);
+            chars[i/2] = (char)(Integer.valueOf(str.substring(i,i+2),16) % 256);
         }
-        return retval;
+        return String.valueOf(chars);
+    }
+
+    /**
+     * a faker that makes the md5 stuff believes he's running in JS Engine
+     * @param uin uin in a long's bytes
+     * @return a String as JS does
+     */
+    static public String hackUin(String uin) {
+        String hex = "";
+        for (int i = 0; i < uin.length(); i+=4) {
+            hex = hex.concat(uin.substring(i+2,i+4).toUpperCase());
+        }
+        return hexchar2bin(hex);
     }
 }
