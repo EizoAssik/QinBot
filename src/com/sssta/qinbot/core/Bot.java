@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 
 import javax.script.ScriptEngine;
@@ -27,7 +28,9 @@ import com.sssta.qinbot.model.Friend;
 import com.sssta.qinbot.model.Group;
 import com.sssta.qinbot.model.VerifyCodeChecker;
 import com.sssta.qinbot.util.FunnyHash;
-import com.sssta.qinbot.util.HttpHelper;
+
+import static com.sssta.qinbot.util.HttpHelper.*;
+
 import com.sssta.qinbot.util.ResponseParser;
 import com.sun.tools.javac.util.List;
 
@@ -148,21 +151,28 @@ public class Bot {
 		//获取密码hash码
 		String p = FunnyHash.getPswHash(psw, uni, vcode);		
 		//发起第一次登陆请求
-		String resultString = HttpHelper.sendGet(
+		
+		HashMap<String, String> properties = new HashMap<String, String>();
+		properties.put(PROPERTY_ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+		properties.put(PROPERTY_COOKIE,getCookie());
+		properties.put(PROPERTY_ACCEPT_CHARSET, "UTF-8;");
+		properties.put(PROPERTY_CONNECTION, "keep-alive");
+		properties.put(PROPERTY_REFER, URL_REFER_Q);
+		String resultString = sendGet(
 				String.format(
-						HttpHelper.URL_FORMAT_LOGIN,
+						URL_FORMAT_LOGIN,
 						getQQ(), 
 						p,
 						vcode.toUpperCase(),
 						getLoginSig(),
 						getVerifySession()),
-				HttpHelper.URL_REFER_Q);
+				properties);
 		//解析登陆请求返回的信息，若请求成功并且在里面进行第二次登陆回调来获取最后所需要的Cookie；
 		String state = ResponseParser.parseLogin(resultString);
 		if (state.contains("登录成功")) {
 			//获取重要的两个Cookie
-			setPtwebqq(HttpHelper.getCookie("ptwebqq"));
-			setSkey(HttpHelper.getCookie("skey"));
+			setPtwebqq(getCookie("ptwebqq"));
+			setSkey(getCookie("skey"));
 
 			setState(BotState.ONLINE);
 			//发起第一次Post请求，正式登陆
@@ -172,9 +182,15 @@ public class Bot {
 					+ "\"}";
 			content = URLEncoder.encode(content);// urlencode
 			content = "r=" + content;// post的数据
-			String res = HttpHelper
-					.sendPost(channelLoginUrl, content,
-							"http://d.web2.qq.com/proxy.html?v=20110331002&callback=1&id=2");// post
+			
+			
+			HashMap<String, String> propertiesPost = new HashMap<String, String>();
+			propertiesPost.put(PROPERTY_ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+			propertiesPost.put(PROPERTY_COOKIE,getCookie());
+			propertiesPost.put(PROPERTY_ACCEPT_CHARSET, "UTF-8;");
+			propertiesPost.put(PROPERTY_REFER, URL_REFER_LOGIN_1);
+
+			String res = sendPost(channelLoginUrl, content,propertiesPost);// post
 			System.out.println("\n  " + ptwebqq + "   " + res);
 			JSONObject rootObject = null;
 			try {
@@ -188,10 +204,10 @@ public class Bot {
 				e.printStackTrace();
 			}
 			String uniString = getUni();
-			HttpHelper.addCookie(new BotCookie("p_uni",uniString));
-			HttpHelper.addCookie(new BotCookie("pt2gguni",uniString));
-			HttpHelper.addCookie(new BotCookie("uni",uniString));
-			HttpHelper.addCookie(new BotCookie("ptui_loginuni",qq));
+			addCookie(new BotCookie("p_uni",uniString));
+			addCookie(new BotCookie("pt2gguni",uniString));
+			addCookie(new BotCookie("uni",uniString));
+			addCookie(new BotCookie("ptui_loginuni",qq));
 			
 			//初始化用户，群组，讨论组列表
 			initInfo();
@@ -203,29 +219,29 @@ public class Bot {
 		} else {
 			JOptionPane.showMessageDialog(null, state, "警告",
 					JOptionPane.WARNING_MESSAGE);
-			HttpHelper.clearCookieCache();
+			clearCookieCache();
 			return false;
 		}
 	}
 	
 	private void initInfo() {
-		getGroups();
-		getFriends();
-		getDiscussGroups();
+		updateGroups();
+		updateFriends();
+		updateDiscussGroups();
 	}
 
-	private void getDiscussGroups() {
+	private void updateDiscussGroups() {
 		// TODO Auto-generated method stub
 		
 	}
 
-	private void getFriends() {
+	private void updateFriends() {
 		// TODO Auto-generated method stub
 		
 	}
 
-	private void getGroups() {
-		String resultString = HttpHelper.getGroupNameList(getGroupListReqData());
+	private void updateGroups() {
+		String resultString = getGroupNameList(getGroupListReqData());
 		try {
 			JSONObject base = new JSONObject(resultString);
 			if (base.optInt("retcode",-1) == 0) {
@@ -242,15 +258,21 @@ public class Bot {
 	}
 
 	public static void checkLogin(EventCallback event){
-    	String responseString = HttpHelper.sendGet(String.format(HttpHelper.URL_FORMAT_CHECK,
+		
+		HashMap<String, String> properties = new HashMap<String, String>();
+		properties.put(PROPERTY_ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+		properties.put(PROPERTY_COOKIE,getCookie());
+		properties.put(PROPERTY_ACCEPT_CHARSET, "UTF-8;");
+		properties.put(PROPERTY_REFER, URL_REFER_Q);
+    	String responseString = sendGet(String.format(URL_FORMAT_CHECK,
     			Bot.getInstance().getQQ()
     			,Bot.getInstance().getLoginSig()
-    			,new Random().nextDouble()),HttpHelper.URL_REFER_Q);
+    			,new Random().nextDouble()),properties);
     	
-        String verifyString = HttpHelper.getCookie("ptvfsession");
+        String verifyString = getCookie("ptvfsession");
         if (verifyString!=null) {
 	        Bot.getInstance().setVerifySession(verifyString);
-	        HttpHelper.addCookie(new BotCookie("verifysession",verifyString));
+	        addCookie(new BotCookie("verifysession",verifyString));
 		}
         
     	try {
@@ -304,11 +326,8 @@ public class Bot {
 		return pollReqCache;
 	}
 	
-	public  String getSendGrouopReqData(){
-		if (groups.size() == 0) {
-			return "";
-		}
-		String content = String.format("{\"group_uin\":%s,\"content\":\"[\\\"自动的，。。。\\\\n\\\\n\\\",[\\\"font\\\",{\\\"name\\\":\\\"宋体\\\",\\\"size\\\":\\\"10\\\",\\\"style\\\":[0,0,0],\\\"color\\\":\\\"000000\\\"}]]\",\"msg_id\":%d,\"clientid\":\"%s\",\"psessionid\":\"%s\"}",groups.get(0).getUni(),messageID++,CLIENT_ID,psessionid);
+	public  String getSendGrouopReqData(String group_uni){
+		String content = String.format("{\"group_uin\":%s,\"content\":\"[\\\"诚信诚念博导好，Java大法保平安\\\\n\\\\n\\\",[\\\"font\\\",{\\\"name\\\":\\\"宋体\\\",\\\"size\\\":\\\"10\\\",\\\"style\\\":[0,0,0],\\\"color\\\":\\\"000000\\\"}]]\",\"msg_id\":%d,\"clientid\":\"%s\",\"psessionid\":\"%s\"}",group_uni,messageID++,CLIENT_ID,psessionid);
 		content = "r="+URLEncoder.encode(content)+"&clientid="+CLIENT_ID+"%psessionid="+psessionid;
 		return content;
 	}
@@ -318,5 +337,19 @@ public class Bot {
 		content = "r="+URLEncoder.encode(content);
 		return content;
 	}
+
+	public ArrayList<Group> getGroups() {
+		return this.groups;
+	}
+
+	public void setFriends(ArrayList<Friend> friends) {
+		this.friends = friends;
+	}
+
+	public void setDiscussGroups(ArrayList<DiscussGroup> discussGroups) {
+		this.discussGroups = discussGroups;
+	}
+	
+	
 	
 }

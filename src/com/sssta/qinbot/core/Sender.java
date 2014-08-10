@@ -18,7 +18,7 @@ public class Sender extends Thread {
 
 	@Override
 	public void destroy() {
-		
+		//TODO 
 		super.destroy();
 	}
 
@@ -27,8 +27,8 @@ public class Sender extends Thread {
 		while (true) {
 			if (!pause) {
 				try {
-					send();
-					sleep(4000);
+					//send();
+					sleep(1000);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				} catch (Exception e) {
@@ -38,11 +38,12 @@ public class Sender extends Thread {
 		}
 	}
 	
-
-	
 	public void send(){
-		String resultJson = HttpHelper.send(bot.getSendGrouopReqData());
-		System.out.println("send--"+resultJson);
+		if (bot.getGroups().size()>0) {
+			String resultJson = HttpHelper.send(bot.getSendGrouopReqData((bot.getGroups().get(0).getUni())));
+			System.out.println("send--"+resultJson);
+		}
+		
 
 	}
 	

@@ -1,6 +1,14 @@
 package com.sssta.qinbot.util;
 
+import static com.sssta.qinbot.util.HttpHelper.PROPERTY_ACCEPT;
+import static com.sssta.qinbot.util.HttpHelper.PROPERTY_ACCEPT_CHARSET;
+import static com.sssta.qinbot.util.HttpHelper.PROPERTY_COOKIE;
+import static com.sssta.qinbot.util.HttpHelper.PROPERTY_CONNECTION;
+
+import static com.sssta.qinbot.util.HttpHelper.getCookie;
+
 import java.text.ParseException;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,7 +38,12 @@ public class ResponseParser {
 			Bot.getInstance().setNikeName(matcher.group(6));
 			//第二次登陆回调
 			if (!matcher.group(3).equals("")) {
-				HttpHelper.sendGet(matcher.group(3),"");
+				HashMap<String, String> properties = new HashMap<String, String>();
+				properties.put(PROPERTY_ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+				properties.put(PROPERTY_COOKIE,getCookie());
+				properties.put(PROPERTY_ACCEPT_CHARSET, "UTF-8;");
+				properties.put(PROPERTY_CONNECTION, "keep-alive");
+				HttpHelper.sendGet(matcher.group(3),properties);
 			}
 			return matcher.group(5);
 		}

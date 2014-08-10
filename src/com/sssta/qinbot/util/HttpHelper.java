@@ -31,47 +31,64 @@ import com.sun.jndi.url.ldaps.ldapsURLContextFactory;
 
 
 public class HttpHelper {
+	public static final String PROPERTY_REFER = "Referer";
+	public static final String PROPERTY_COOKIE = "Cookie";
+	public static final String PROPERTY_ACCEPT = "Accept";
+	public static final String PROPERTY_ACCEPT_CHARSET = "Accept-Charset";
+	public static final String PROPERTY_ACCEPT_ENCODING = "Accept-Encoding";
+	public static final String PROPERTY_ACCEPT_LANGUAGE = "Accept-Language";
+	public static final String PROPERTY_HOST = "Host";
+	public static final String PROPERTY_ORIGIN = "Origin";
+	public static final String PROPERTY_CONNECTION = "Connection";
+	public static final String PROPERTY_CONTETN_TYPE = "Content-Type";
+
+	
+	
 	public static final String URL_POLL = "http://d.web2.qq.com/channel/poll2";
+	public static final String URL_GET_INFO_GROUP = "http://s.web2.qq.com/api/get_group_name_list_mask2";
+	public static final String URL_GET_INFO_FRIEND = "http://s.web2.qq.com/api/get_group_name_list_mask2";
+
+	public static final String URL_REFER_LOGIN_1 ="http://d.web2.qq.com/proxy.html?v=20110331002&callback=1&id=2";
 	public static final String URL_REFER = "http://web2.qq.com/webqq.html";  
 	public static final String URL_REFER_Q = "https://ui.ptlogin2.qq.com/cgi-bin/login?daid=164&target=self&style=5&mibao_css=m_webqq&appid=1003903&enable_qlogin=0&no_verifyimg=1&s_url=http%3A%2F%2Fweb2.qq.com%2Floginproxy.html&f_url=loginerroralert&strong_login=1&login_state=10&t=20140612002";
 	public static final String URL_REFER_POLL = "http://d.web2.qq.com/proxy.html?v=20110331002&callback=1&id=2";
 	public static final String URL_SEND_GROUP = "http://d.web2.qq.com/channel/send_qun_msg2";
-	public static final String URL_GET_GROUP = "http://s.web2.qq.com/api/get_group_name_list_mask2";
-	public static final String URL_REFER_GET_GROUP_NAME_LIST = "http://s.web2.qq.com/proxy.html?v=20110412001&callback=1&id=3";
+	public static final String URL_REFER_GET_INFO = "http://s.web2.qq.com/proxy.html?v=20110412001&callback=1&id=3";
 	//uni QQ号   login_sig 通过getLoginSig获得    r 一个随机数
     public static final String URL_FORMAT_CHECK = "https://ssl.ptlogin2.qq.com/check?uin=%s&appid=1003903&js_ver=10087&js_type=0&login_sig=%s&u1=http%%3A%%2F%%2Fweb2.qq.com%%2Floginproxy.html&r=%f";
       //u qq号 p 加密码  verifycode   login_sig    verifysession
     public static final String URL_FORMAT_LOGIN = "https://ssl.ptlogin2.qq.com/login?u=%s&p=%s&verifycode=%s&webqq_type=10&remember_uin=1&login2qq=1&aid=1003903&u1=http%%3A%%2F%%2Fweb2.qq.com%%2Floginproxy.html%%3Flogin2qq%%3D1%%26webqq_type%%3D10&h=1&ptredirect=0&ptlang=2052&daid=164&from_ui=1&pttype=1&dumy=&fp=loginerroralert&action=6-31-678356&mibao_css=m_webqq&t=1&g=1&js_type=0&js_ver=10088&login_sig=%s&pt_uistyle=5&pt_vcode_v1=0&pt_verifysession_v1=%s";
     
+    public static final String URL_FORMAT_GET_FRIENDS = "";
+    
     private static HashMap<String, BotCookie> cookieMap = new HashMap<String, BotCookie>();
 	private static StringBuilder cookieCache = new StringBuilder();
 
 	
-	 public static  String sendPost(String url, String contents,String refer){  
+	 public static  String sendPost(String url, String contents,HashMap<String, String> propertyMap){  
 		 InputStreamReader inr = null;
 	        try{   
 	            System.out.println("post>>>"+url);  
-	               
 	            URL serverUrl = new URL(url);  
 	            HttpURLConnection conn = (HttpURLConnection) serverUrl.openConnection();   
 	            conn.setRequestMethod("POST");//"POST" ,"GET"   
 	             
-	            if(refer != null){  
-	                conn.addRequestProperty("Referer", refer);  
-	            }else{
-	            	conn.addRequestProperty("Referer", URL_REFER);  
+	            if(propertyMap != null){  
+	            	Set<String> keys = propertyMap.keySet();
+			    	Iterator<String> iterator = keys.iterator();
+			    	while (iterator.hasNext()) {
+			    		String property = propertyMap.get(iterator.next());
+			            conn.addRequestProperty(property, propertyMap.get(property));  
+			    	}
 	            }
-	            conn.addRequestProperty("Cookie", getCookie());  
-	            conn.addRequestProperty("Accept-Charset", "UTF-8;");//GB2312,  
-	            //conn.addRequestProperty("Connection", "keep-alive");
-	            conn.addRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
 	            conn.addRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36");  
+	            conn.setDoInput(true);
 	            conn.setDoOutput(true);   
 	            conn.connect();  
 	              
-	            conn.getOutputStream().write(contents.getBytes());  
-	              
-	            
+	            if (contents!=null) {
+		            conn.getOutputStream().write(contents.getBytes());  
+				}
 	            if(conn.getHeaderFields().get("Set-Cookie") != null){  
 	                for(String s:conn.getHeaderFields().get("Set-Cookie")){  
 	                    addCookie(new BotCookie(s));
@@ -251,11 +268,11 @@ public class HttpHelper {
 		        try{   
 		               
 		            //URL serverUrl = new URL(contents); 
-		            URL serverUrl = new URL(URL_GET_GROUP);  
+		            URL serverUrl = new URL(URL_GET_INFO_GROUP);  
 
 		            HttpURLConnection conn = (HttpURLConnection) serverUrl.openConnection();   
 		            conn.setRequestMethod("POST");//"POST
-		            conn.addRequestProperty("Referer", URL_REFER_GET_GROUP_NAME_LIST);  
+		            conn.addRequestProperty("Referer", URL_REFER_GET_INFO);  
 			        conn.addRequestProperty("Cookie", getCookie());  
 		            conn.addRequestProperty("Accept-Encoding", "gzip,deflate,sdch");
 		            conn.addRequestProperty("Content-Type", "application/x-www-form-urlencoded");
@@ -271,7 +288,6 @@ public class HttpHelper {
 		            conn.setReadTimeout(60*1000);
 		            conn.setConnectTimeout(20*1000);
 		            conn.connect();  
-		             System.out.println(contents);
 		            conn.getOutputStream().write(contents.getBytes());  
 		            conn.getOutputStream().flush(); 
 		            conn.getOutputStream().close(); 
@@ -309,7 +325,7 @@ public class HttpHelper {
 	      
 	      
 	   
-	    public static String sendGet(String url,String refer){ 
+	    public static String sendGet(String url,HashMap<String, String> propertyMap){ 
 	    	InputStreamReader inr = null;
 	        try{   
 	            System.out.println("get>>>"+url);  
@@ -318,16 +334,21 @@ public class HttpHelper {
 	            HttpURLConnection conn = (HttpURLConnection) serverUrl.openConnection();   
 	            conn.setRequestMethod("GET");//"POST" ,"GET"  
 	            conn.setDoOutput(true);   
-	            if(refer != null){  
-	                conn.addRequestProperty("Referer", refer);  
-	            }else{
-	            	conn.addRequestProperty("Referer", URL_REFER);  
+	            if(propertyMap != null){  
+	            	Set<String> keys = propertyMap.keySet();
+			    	Iterator<String> iterator = keys.iterator();
+			    	while (iterator.hasNext()) {
+			    		String property = propertyMap.get(iterator.next());
+			            conn.addRequestProperty(property, propertyMap.get(property));  
+			    	}
 	            }
 	            //System.out.println("跳转前——"+conn.getURL().getPath());
 	            conn.addRequestProperty("Cookie", getCookie());  
 	            conn.addRequestProperty("Accept-Charset", "UTF-8;");//GB2312,  
 	            conn.addRequestProperty("Connection", "keep-alive");
 	            conn.addRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+	         
+	            
 	            conn.addRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36");
 	            HttpURLConnection.setFollowRedirects(false);
 	            conn.connect();  
