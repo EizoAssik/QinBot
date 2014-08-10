@@ -21,6 +21,7 @@ import com.sssta.qinbot.event.EventCallback;
 import com.sssta.qinbot.model.BotCookie;
 import com.sssta.qinbot.model.BotState;
 import com.sssta.qinbot.model.VerifyCodeChecker;
+import com.sssta.qinbot.util.FunnyHash;
 import com.sssta.qinbot.util.HttpHelper;
 import com.sssta.qinbot.util.ResponseParser;
 
@@ -134,23 +135,8 @@ public class Bot {
 		String vcode = vCode.equals("") ? getVcReqCode() : vCode;
 		
 		//System.out.println(psw+"   "+uni+"   "+vCode);
-		//通过pass.js计算出加密后的密码p
-		String p = "";
-		ScriptEngineManager m = new ScriptEngineManager();
-		ScriptEngine se = m.getEngineByName("javascript");
-		
-		try {
-			se.eval(new FileReader(
-					new File("src/com/sssta/qinbot/util/pass.js")));
-			Object t = se.eval("getEncryption(\"" + psw + "\",\"" + uni
-					+ "\",\"" + vcode + "\");");
-			p = t.toString();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (ScriptException e) {
-			e.printStackTrace();
-		}
-		
+		//获取密码hash码
+		String p = FunnyHash.getPswHash(psw, uni, vcode);		
 		//发起第一次登陆请求
 		String resultString = HttpHelper.sendGet(
 				String.format(

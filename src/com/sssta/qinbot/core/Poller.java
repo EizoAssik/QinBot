@@ -18,7 +18,6 @@ public class Poller extends Thread {
 
 	@Override
 	public void destroy() {
-		
 		super.destroy();
 	}
 
