@@ -169,14 +169,18 @@ public class Bot {
 			String content = "{\"status\":\"\",\"ptwebqq\":\"" + ptwebqq
 					+ "\",\"passwd_sig\":\"\",\"clientid\":\"" + CLIENT_ID
 					+ "\"}";
-			content = URLEncoder.encode(content);// urlencode
-			content = "r=" + content;// post的数据
+			content = "r=" + URLEncoder.encode(content);;// post的数据
 			
 			
 			HashMap<String, String> propertiesPost = new HashMap<String, String>();
-			propertiesPost.put(PROPERTY_ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+			propertiesPost.put(PROPERTY_ACCEPT, "*/*");
 			propertiesPost.put(PROPERTY_REFER, URL_REFER_LOGIN_1);
-
+			propertiesPost.put(PROPERTY_HOST, "d.web2.qq.com");
+			propertiesPost.put(PROPERTY_ORIGIN, "http://d.web2.qq.com");
+			propertiesPost.put(PROPERTY_ACCEPT_ENCODING, "gzip,deflate,sdch");
+			propertiesPost.put(PROPERTY_CONNECTION, "keep-alive");
+			propertiesPost.put(PROPERTY_CONTETN_TYPE, "application/x-www-form-urlencoded");
+			
 			String res = sendPost(channelLoginUrl, content,propertiesPost);// post
 			System.out.println("\n  " + ptwebqq + "   " + res);
 			JSONObject rootObject = null;
@@ -237,6 +241,41 @@ public class Bot {
 		properties.put(PROPERTY_ORIGIN, "http://s.web2.qq.com");
 
 		String resultString = sendPost(HttpHelper.URL_GET_FRIENDS,content,properties);
+		System.out.println("friend--"+resultString);
+		try {
+			JSONObject base = new JSONObject(resultString);
+			if (base.optInt("retcode",-1) == 0) {
+				JSONObject resultObject = base.optJSONObject("result");
+				JSONArray friendsArray = resultObject.optJSONArray("friends");
+				for (int i = 0; i < friendsArray.length(); i++) {
+					JSONObject friendObject = friendsArray.optJSONObject(i);
+					Friend friend = new Friend();
+					friend.setUni(friendObject.optString("uni"));
+					friend.setFriendFlag(friendObject.optInt("flag"));
+					friend.setCategories(friendObject.optInt("categories"));
+					friends.put(friend.getUni(), friend);
+				}
+				
+				JSONArray infoArray = resultObject.optJSONArray("info");
+				for (int i = 0; i < infoArray.length(); i++) {
+					JSONObject infoObject = infoArray.optJSONObject(i);
+					Friend friend = friends.get(infoObject.optString("uni"));
+					friend.setFace(infoObject.optInt("face"));
+					friend.setInfoFlag(infoObject.optInt("flag"));
+					friend.setNickName(infoObject.optString("nick"));
+				}
+				
+				JSONArray markNameArray = resultObject.optJSONArray("marknames");
+				for (int i = 0; i < markNameArray.length(); i++) {
+					JSONObject infoObject = markNameArray.optJSONObject(i);
+					Friend friend = friends.get(infoObject.optString("uni"));
+					friend.setMarkName(infoObject.optString("markname"));
+					friend.setMarkNameType(infoObject.optInt("type"));
+				}
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void updateGroups() {

@@ -32,7 +32,6 @@ import com.sun.jndi.url.ldaps.ldapsURLContextFactory;
 
 public class HttpHelper {
 	public static final String PROPERTY_REFER = "Referer";
-	public static final String PROPERTY_COOKIE = "Cookie";
 	public static final String PROPERTY_ACCEPT = "Accept";
 	public static final String PROPERTY_ACCEPT_CHARSET = "Accept-Charset";
 	public static final String PROPERTY_ACCEPT_ENCODING = "Accept-Encoding";
@@ -46,7 +45,7 @@ public class HttpHelper {
 	
 	public static final String URL_POLL = "http://d.web2.qq.com/channel/poll2";
 	public static final String URL_GET_INFO_GROUP = "http://s.web2.qq.com/api/get_group_name_list_mask2";
-	public static final String URL_GET_FRIENDS = "http://s.web2.qq.com/api/get_group_name_list_mask2";
+	public static final String URL_GET_FRIENDS = "http://s.web2.qq.com/api/get_user_friends2";
 	public static final String URL_SEND_GROUP = "http://d.web2.qq.com/channel/send_qun_msg2";
 
 	public static final String URL_REFER_LOGIN_1 ="http://d.web2.qq.com/proxy.html?v=20110331002&callback=1&id=2";
@@ -77,15 +76,14 @@ public class HttpHelper {
 	            	Set<String> keys = propertyMap.keySet();
 			    	Iterator<String> iterator = keys.iterator();
 			    	while (iterator.hasNext()) {
-			    		String property = propertyMap.get(iterator.next());
-			            conn.addRequestProperty(property, propertyMap.get(property));  
+			    		String key = iterator.next();
+			            conn.addRequestProperty(key, propertyMap.get(key));  
 			    	}
 	            }
 	            
 	            conn.addRequestProperty("Cookie", getCookie());  
 	            conn.addRequestProperty("Accept-Charset", "UTF-8;");//GB2312,  
 	            conn.addRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36");
-	            conn.addRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36");  
 	            conn.setDoInput(true);
 	            conn.setDoOutput(true);   
 	            conn.connect();  
@@ -101,8 +99,7 @@ public class HttpHelper {
 	              
 	            InputStream ins =  conn.getInputStream();  
 	              
-	            String charset = "UTF-8";   
-	            inr = new InputStreamReader(ins, charset);  
+	            inr = new InputStreamReader(ins, "UTF-8");  
 	            BufferedReader bfr = new BufferedReader(inr);  
 	             
 	            String line = "";  
@@ -147,8 +144,8 @@ public class HttpHelper {
 	            	Set<String> keys = propertyMap.keySet();
 			    	Iterator<String> iterator = keys.iterator();
 			    	while (iterator.hasNext()) {
-			    		String property = propertyMap.get(iterator.next());
-			            conn.addRequestProperty(property, propertyMap.get(property));  
+			    		String key = iterator.next();
+			            conn.addRequestProperty(key, propertyMap.get(key));  
 			    	}
 	            }
 	            conn.addRequestProperty("Cookie", getCookie());  
