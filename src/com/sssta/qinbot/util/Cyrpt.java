@@ -19,8 +19,7 @@ public class Cyrpt {
     // This is the `chrsz` in pass.js
     static final int CHARSIZE = 8;
     static final int HASHMOD = 32;
-    static ScriptEngineManager m = new ScriptEngineManager();
-	static ScriptEngine jsEngine ;
+    static final String HEX_DIGITS = "0123456789ABCDEF";
 
     /**
      * Just keep the interface
@@ -39,26 +38,20 @@ public class Cyrpt {
         String hashed = md5(pu_md5 + vcode.toUpperCase());
         return hashed;
     }
-    
-    public static String getHash(String ptwebqq,String uin){
-    	ptwebqq = null == ptwebqq?"":ptwebqq;
-    	uin = null == uin?"":uin;
-    	String p = "";
-		try {
-			if (jsEngine == null) {
-				jsEngine = m.getEngineByName("javascript");
-				jsEngine.eval(new FileReader(
-						new File("src/com/sssta/qinbot/util/pass.js")));
-			}
-			
-			Object t = jsEngine.eval("hash_get(\"" + uin + "\",\"" + ptwebqq + "\");");
-			p = t.toString();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (ScriptException e) {
-			e.printStackTrace();
-		}
-		return p;
+
+    public static String getHash(String uin, String ptwebqq) {
+        uin = hackUin(uin);
+        String a = ptwebqq + "password error";
+        String retval = "";
+        int uin_len = uin.length();
+        char[] E = new char[a.length()];
+        for (int c = 0; c < a.length(); c++)
+            E[c] = (char) (uin.charAt(c % uin_len) ^ a.charAt(c));
+        for (char char_in_E : E) {
+            retval += HEX_DIGITS.charAt((char_in_E >> 4) & 15);
+            retval += HEX_DIGITS.charAt(char_in_E & 15);
+        }
+        return retval;
     }
 
     static public String md5(String s) {
@@ -236,7 +229,8 @@ public class Cyrpt {
     /**
      * padding zeros manually to compatible the JS Arrays' feature
      * while during undefined indexes
-     * @param  array the array given to core_md5
+     *
+     * @param array the array given to core_md5
      * @return properly padded array
      */
     static int[] fit_with_zero(int[] array) {
@@ -251,27 +245,33 @@ public class Cyrpt {
     /**
      * rewrites the function in JS
      * different code, but these has same output as the JS one
+     *
      * @param str hex string
-     * @return    hex -> ASCII String
+     * @return hex -> ASCII String
      */
     static public String hexchar2bin(String str) {
-        char[] chars = new char[str.length()/2];
+        char[] chars = new char[str.length() / 2];
         for (int i = 0; i < str.length(); i += 2) {
-            chars[i/2] = (char)(Integer.valueOf(str.substring(i,i+2),16) % 256);
+            chars[i / 2] = (char) (Integer.valueOf(str.substring(i, i + 2), 16) % 256);
         }
         return String.valueOf(chars);
     }
 
     /**
      * a faker that makes the md5 stuff believes he's running in JS Engine
+     *
      * @param uin uin in a long's bytes
      * @return a String as JS does
      */
     static public String hackUin(String uin) {
-        String hex = "";
-        for (int i = 0; i < uin.length(); i+=4) {
-            hex = hex.concat(uin.substring(i+2,i+4).toUpperCase());
+        if (uin.length()==32 && uin.contains("\\x")) {
+            String hex = "";
+            for (int i = 0; i < uin.length(); i += 4) {
+                hex = hex.concat(uin.substring(i + 2, i + 4).toUpperCase());
+            }
+            return hexchar2bin(hex);
+        } else {
+            return uin;
         }
-        return hexchar2bin(hex);
     }
 }
