@@ -18,6 +18,7 @@ import com.sssta.qinbot.model.DiscussGroup;
 import com.sssta.qinbot.model.Friend;
 import com.sssta.qinbot.model.Group;
 import com.sssta.qinbot.model.VerifyCodeChecker;
+import com.sssta.qinbot.util.Cyrpt;
 import com.sssta.qinbot.util.FunnyHash;
 import com.sssta.qinbot.util.HttpHelper;
 
@@ -141,9 +142,11 @@ public class Bot {
 		//发起第一次登陆请求
 		
 		//获取密码hash码
-		String p = FunnyHash.getPswHash(psw, uni, vcode);		
-		
-		HashMap<String, String> properties = new HashMap<String, String>();
+        String p = Cyrpt.getEncryption(psw, uni, vcode);
+
+
+
+        HashMap<String, String> properties = new HashMap<String, String>();
 		properties.put(PROPERTY_ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
 		properties.put(PROPERTY_CONNECTION, "keep-alive");
 		properties.put(PROPERTY_REFER, URL_REFER_Q);
@@ -262,7 +265,7 @@ public class Bot {
 				JSONArray groupArray = base.optJSONObject("result").optJSONArray("gnamelist");
 				for (int i = 0; i < groupArray.length(); i++) {
 					Group group = new Group(groupArray.optJSONObject(i));
-					groups.put(group.getName(),group);
+					groups.put(group.getName(), group);
 				}
 			}
 		} catch (JSONException e) {
