@@ -1,21 +1,12 @@
 package com.sssta.qinbot.core;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.net.URLEncoder;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 import javax.swing.JOptionPane;
 
-import atg.taglib.json.util.Cookie;
 import atg.taglib.json.util.JSONArray;
 import atg.taglib.json.util.JSONException;
 import atg.taglib.json.util.JSONObject;
@@ -28,11 +19,11 @@ import com.sssta.qinbot.model.Friend;
 import com.sssta.qinbot.model.Group;
 import com.sssta.qinbot.model.VerifyCodeChecker;
 import com.sssta.qinbot.util.FunnyHash;
+import com.sssta.qinbot.util.HttpHelper;
 
 import static com.sssta.qinbot.util.HttpHelper.*;
 
 import com.sssta.qinbot.util.ResponseParser;
-import com.sun.tools.javac.util.List;
 
 public class Bot {
 	private String qq;
@@ -57,9 +48,9 @@ public class Bot {
 	private Sender sender = new Sender(this);
 	private int messageID = 24220008;
 	
-	private ArrayList<Group> groups = new ArrayList<Group>();
-	private ArrayList<Friend> friends = new ArrayList<Friend>();
-	private ArrayList<DiscussGroup> discussGroups = new ArrayList<DiscussGroup>();
+	private HashMap<String,Group> groups = new HashMap<String,Group>();
+	private HashMap<String,Friend> friends = new HashMap<String,Friend>();
+	private HashMap<String,DiscussGroup> discussGroups = new HashMap<String,DiscussGroup>();
 	
 	public static Bot getInstance() {
 		return bot;
@@ -196,7 +187,6 @@ public class Bot {
 				vfwebqq = object.optString("vfwebqq");
 				psessionid = object.optString("psessionid");
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			String uniString = getUni();
@@ -231,10 +221,29 @@ public class Bot {
 	}
 
 	private void updateFriends() {
-		// TODO Auto-generated method stub
+		
+		String content = String.format("{\"h\":\"hello\",\"hash\":\"%s\",\"vfwebqq\":\"%s\"}",FunnyHash.getNewbiHash(ptwebqq, qq),vfwebqq);
+		content = "r="+URLEncoder.encode(content);
+		
+		HashMap<String, String> properties = new HashMap<String, String>();
+		properties.put(PROPERTY_ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+		properties.put(PROPERTY_REFER,URL_REFER_GET_INFO);
+		properties.put(PROPERTY_ACCEPT,"*/*");
+		properties.put(PROPERTY_ACCEPT_ENCODING, "gzip,deflate,sdch");
+		properties.put(PROPERTY_CONTETN_TYPE, "application/x-www-form-urlencoded");
+		properties.put(PROPERTY_CONNECTION,"keep-alive");
+		properties.put(PROPERTY_ACCEPT_LANGUAGE, "zh-CN,zh;q=0.8");
+		properties.put(PROPERTY_HOST, "s.web2.qq.com");
+		properties.put(PROPERTY_ORIGIN, "http://s.web2.qq.com");
+
+		String resultString = sendPost(HttpHelper.URL_GET_FRIENDS,content,properties);
 	}
 
 	private void updateGroups() {
+		
+		String content = String.format("{\"hash\":\"%s\",\"vfwebqq\":\"%s\"}",FunnyHash.getNewbiHash(ptwebqq, qq),vfwebqq);
+		content = "r="+URLEncoder.encode(content);
+		
 		HashMap<String, String> properties = new HashMap<String, String>();
 		properties.put(PROPERTY_ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
 		properties.put(PROPERTY_REFER, URL_REFER_POLL);
@@ -246,17 +255,17 @@ public class Bot {
 		properties.put(PROPERTY_HOST, "d.web2.qq.com");
 		properties.put(PROPERTY_ORIGIN, "http://d.web2.qq.com");
 
-		String resultString = sendPost(URL_GET_INFO_GROUP,getGroupListReqData(),properties);
+		String resultString = sendPost(URL_GET_INFO_GROUP,content,properties);
 		try {
 			JSONObject base = new JSONObject(resultString);
 			if (base.optInt("retcode",-1) == 0) {
 				JSONArray groupArray = base.optJSONObject("result").optJSONArray("gnamelist");
 				for (int i = 0; i < groupArray.length(); i++) {
-					groups.add(new Group(groupArray.optJSONObject(i)));
+					Group group = new Group(groupArray.optJSONObject(i));
+					groups.put(group.getName(),group);
 				}
 			}
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -285,7 +294,6 @@ public class Bot {
 					Bot.getInstance().attachChecker(checker);
 				}
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     }
@@ -333,22 +341,17 @@ public class Bot {
 		return content;
 	}
 	
-	public String getGroupListReqData(){
-		String content = String.format("{\"hash\":\"%s\",\"vfwebqq\":\"%s\"}",FunnyHash.getNewbiHash(ptwebqq, qq),vfwebqq);
-		content = "r="+URLEncoder.encode(content);
-		return content;
-	}
 
-	public ArrayList<Group> getGroups() {
+	public HashMap<String,Group> getGroups() {
 		return this.groups;
 	}
 
-	public void setFriends(ArrayList<Friend> friends) {
-		this.friends = friends;
+	public HashMap<String,Friend> getFriends() {
+		return this.friends;
 	}
 
-	public void setDiscussGroups(ArrayList<DiscussGroup> discussGroups) {
-		this.discussGroups = discussGroups;
+	public HashMap<String,DiscussGroup> getDiscussGroups() {
+		return this.discussGroups;
 	}
 	
 	

@@ -9,7 +9,11 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-
+/**
+ * 还能不能愉快地玩哈希了啊喂
+ * @author cauchywei
+ *
+ */
 public class FunnyHash {
 	
 	static ScriptEngineManager m = new ScriptEngineManager();

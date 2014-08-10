@@ -46,7 +46,7 @@ public class HttpHelper {
 	
 	public static final String URL_POLL = "http://d.web2.qq.com/channel/poll2";
 	public static final String URL_GET_INFO_GROUP = "http://s.web2.qq.com/api/get_group_name_list_mask2";
-	public static final String URL_GET_INFO_FRIEND = "http://s.web2.qq.com/api/get_group_name_list_mask2";
+	public static final String URL_GET_FRIENDS = "http://s.web2.qq.com/api/get_group_name_list_mask2";
 	public static final String URL_SEND_GROUP = "http://d.web2.qq.com/channel/send_qun_msg2";
 
 	public static final String URL_REFER_LOGIN_1 ="http://d.web2.qq.com/proxy.html?v=20110331002&callback=1&id=2";
@@ -165,7 +165,6 @@ public class HttpHelper {
 	            InputStream ins =  conn.getInputStream();  
 	            inr = new InputStreamReader(ins, "UTF-8");  
 	            BufferedReader bfr = new BufferedReader(inr);  
-	             
 	            String line = "";  
 	            StringBuffer res = new StringBuffer();   
 	            do{  
@@ -173,9 +172,7 @@ public class HttpHelper {
 	                line = bfr.readLine();  
 	               //System.out.println(line);  
 	            }while(line != null);  
-	            
 	       //   System.out.println(">>>==="+res);  
-	              
 	            return res.toString();  
 	        }catch(Exception e){  
 	            e.printStackTrace();  
@@ -200,11 +197,9 @@ public class HttpHelper {
 	    	Pattern pattern = Pattern.compile("g_login_sig=encodeURIComponent\\(\"(.*?)\"\\);");
 	    	Matcher mat = pattern.matcher(responseString);
 	    	if(mat.find())
-	    	 return mat.group(1);
+	    		return mat.group(1);
 	    	else return "";
 	    }
-	    
-	    
 	    
 	    public static BufferedImage getImage(String url,String refer,EventCallback callback){
 	    	BufferedImage image = null;
