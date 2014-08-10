@@ -9,8 +9,6 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import org.jruby.javasupport.bsf.JRubyEngine;
-import org.jruby.util.JRubyFile;
 
 public class FunnyHash {
 	public static String getPswHash(String psw, String uni, String vcode) {
