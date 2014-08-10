@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.HashMap;
 
-import sun.tools.tree.BitAndExpression;
 import atg.taglib.json.util.JSONException;
 import atg.taglib.json.util.JSONObject;
 

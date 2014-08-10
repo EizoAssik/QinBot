@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.HashMap;
 
-import sun.tools.tree.BitAndExpression;
 
 import com.sssta.qinbot.util.HttpHelper;
 

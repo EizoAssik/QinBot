@@ -32,7 +32,6 @@ import com.sssta.qinbot.util.FunnyHash;
 import static com.sssta.qinbot.util.HttpHelper.*;
 
 import com.sssta.qinbot.util.ResponseParser;
-import com.sun.tools.javac.util.List;
 
 public class Bot {
 	private String qq;
