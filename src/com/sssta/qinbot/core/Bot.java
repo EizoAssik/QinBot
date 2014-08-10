@@ -147,15 +147,13 @@ public class Bot {
 		String uni = getQqHex();
 		String vcode = vCode.equals("") ? getVcReqCode() : vCode;
 		
-		//System.out.println(psw+"   "+uni+"   "+vCode);
+		//发起第一次登陆请求
+		
 		//获取密码hash码
 		String p = FunnyHash.getPswHash(psw, uni, vcode);		
-		//发起第一次登陆请求
 		
 		HashMap<String, String> properties = new HashMap<String, String>();
 		properties.put(PROPERTY_ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
-		properties.put(PROPERTY_COOKIE,getCookie());
-		properties.put(PROPERTY_ACCEPT_CHARSET, "UTF-8;");
 		properties.put(PROPERTY_CONNECTION, "keep-alive");
 		properties.put(PROPERTY_REFER, URL_REFER_Q);
 		String resultString = sendGet(
@@ -186,8 +184,6 @@ public class Bot {
 			
 			HashMap<String, String> propertiesPost = new HashMap<String, String>();
 			propertiesPost.put(PROPERTY_ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
-			propertiesPost.put(PROPERTY_COOKIE,getCookie());
-			propertiesPost.put(PROPERTY_ACCEPT_CHARSET, "UTF-8;");
 			propertiesPost.put(PROPERTY_REFER, URL_REFER_LOGIN_1);
 
 			String res = sendPost(channelLoginUrl, content,propertiesPost);// post
@@ -232,16 +228,25 @@ public class Bot {
 
 	private void updateDiscussGroups() {
 		// TODO Auto-generated method stub
-		
 	}
 
 	private void updateFriends() {
 		// TODO Auto-generated method stub
-		
 	}
 
 	private void updateGroups() {
-		String resultString = getGroupNameList(getGroupListReqData());
+		HashMap<String, String> properties = new HashMap<String, String>();
+		properties.put(PROPERTY_ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+		properties.put(PROPERTY_REFER, URL_REFER_POLL);
+		properties.put(PROPERTY_ACCEPT,"*/*");
+		properties.put(PROPERTY_ACCEPT_ENCODING, "gzip,deflate,sdch");
+		properties.put(PROPERTY_CONTETN_TYPE, "application/x-www-form-urlencoded");
+		properties.put(PROPERTY_CONNECTION,"keep-alive");
+		properties.put(PROPERTY_ACCEPT_LANGUAGE, "zh-CN,zh;q=0.8");
+		properties.put(PROPERTY_HOST, "d.web2.qq.com");
+		properties.put(PROPERTY_ORIGIN, "http://d.web2.qq.com");
+
+		String resultString = sendPost(URL_GET_INFO_GROUP,getGroupListReqData(),properties);
 		try {
 			JSONObject base = new JSONObject(resultString);
 			if (base.optInt("retcode",-1) == 0) {
@@ -261,8 +266,6 @@ public class Bot {
 		
 		HashMap<String, String> properties = new HashMap<String, String>();
 		properties.put(PROPERTY_ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
-		properties.put(PROPERTY_COOKIE,getCookie());
-		properties.put(PROPERTY_ACCEPT_CHARSET, "UTF-8;");
 		properties.put(PROPERTY_REFER, URL_REFER_Q);
     	String responseString = sendGet(String.format(URL_FORMAT_CHECK,
     			Bot.getInstance().getQQ()
@@ -320,8 +323,6 @@ public class Bot {
 		if (pollReqCache == null) {
 			pollReqCache =  String.format("{\"clientid\":\"%s\",\"psessionid\":\"%s\",\"key\":0,\"ids\":[]}", CLIENT_ID,psessionid);
 			pollReqCache = "r="+URLEncoder.encode(pollReqCache)+"&clientid="+CLIENT_ID+"%psessionid"+psessionid;
-			//pollReqCache =  String.format("{\"clientid\":\"%s\",\"psessionid\":\"%s\",\"key\":0,\"ids\":[]}", CLIENT_ID,psessionid);
-			
 		}
 		return pollReqCache;
 	}

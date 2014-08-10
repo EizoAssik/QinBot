@@ -1,7 +1,10 @@
 package com.sssta.qinbot.core;
 
+import static com.sssta.qinbot.util.HttpHelper.*;
+
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.util.HashMap;
 
 import sun.tools.tree.BitAndExpression;
 import atg.taglib.json.util.JSONException;
@@ -40,8 +43,18 @@ public class Poller extends Thread {
 	
 	public void  poll() throws IOException{
 		
-		String resultJson = HttpHelper.poll(bot.getPollReqData());
-		//String resultJson = HttpHelper.poll(URL_POLL+"?r="+URLEncoder.encode(bot.getPollReq())+"clientid="+bot.CLIENT_ID+"&psession="+bot.getPsessionid());
+		HashMap<String, String> properties = new HashMap<String, String>();
+		properties.put(PROPERTY_ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+		properties.put(PROPERTY_REFER, URL_REFER_POLL);
+		properties.put(PROPERTY_ACCEPT,"*/*");
+		properties.put(PROPERTY_ACCEPT_ENCODING, "gzip,deflate,sdch");
+		properties.put(PROPERTY_CONTETN_TYPE, "application/x-www-form-urlencoded");
+		properties.put(PROPERTY_CONNECTION,"keep-alive");
+		properties.put(PROPERTY_ACCEPT_LANGUAGE, "zh-CN,zh;q=0.8");
+		properties.put(PROPERTY_HOST, "d.web2.qq.com");
+		properties.put(PROPERTY_ORIGIN, "http://d.web2.qq.com");
+		
+		String resultJson = HttpHelper.sendPost(URL_POLL,bot.getPollReqData(),properties);
 		System.out.println("poll--"+resultJson);
 		try {
 			JSONObject base = new JSONObject(resultJson);
