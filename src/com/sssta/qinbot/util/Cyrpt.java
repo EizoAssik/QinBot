@@ -1,5 +1,13 @@
 package com.sssta.qinbot.util;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+
 /**
  * A 'pure' Java fork of the pass.js
  */
@@ -11,6 +19,8 @@ public class Cyrpt {
     // This is the `chrsz` in pass.js
     static final int CHARSIZE = 8;
     static final int HASHMOD = 32;
+    static ScriptEngineManager m = new ScriptEngineManager();
+	static ScriptEngine jsEngine ;
 
     /**
      * Just keep the interface
@@ -24,10 +34,51 @@ public class Cyrpt {
         password = null == password ? "" : password;
         uni = null == uni ? "" : uni;
         vcode = null == vcode ? "" : vcode;
-        String pw_md5 = hexchar2bin(md5(password));
-        String pu_md5 = md5(pw_md5 + uni);
-        String hashed = md5(pu_md5 + vcode.toUpperCase());
-        return hashed;
+//        String pw_md5 = hexchar2bin(md5(password));
+//        String pu_md5 = md5(pw_md5 + uni);
+//        String hashed = md5(pu_md5 + vcode.toUpperCase());
+//        return hashed;
+        String p = null;
+		
+
+		try {
+			if (jsEngine == null) {
+				jsEngine = m.getEngineByName("javascript");
+				jsEngine.eval(new FileReader(
+						new File("src/com/sssta/qinbot/util/pass.js")));
+			}
+			
+			Object t = jsEngine.eval("getEncryption(\"" + password + "\",\"" + uni
+					+ "\",\"" + vcode + "\");");
+			p = t.toString();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (ScriptException e) {
+			e.printStackTrace();
+		}
+		return p;
+        
+    }
+    
+    public static String getHash(String ptwebqq,String uni){
+    	ptwebqq = null == ptwebqq?"":ptwebqq;
+    	uni = null == uni?"":uni;
+    	String p = "";
+		try {
+			if (jsEngine == null) {
+				jsEngine = m.getEngineByName("javascript");
+				jsEngine.eval(new FileReader(
+						new File("src/com/sssta/qinbot/util/pass.js")));
+			}
+			
+			Object t = jsEngine.eval("hash_get(\"" + uni + "\",\"" + ptwebqq + "\");");
+			p = t.toString();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (ScriptException e) {
+			e.printStackTrace();
+		}
+		return p;
     }
 
     static public String md5(String s) {

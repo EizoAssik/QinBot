@@ -11,6 +11,7 @@ import atg.taglib.json.util.JSONArray;
 import atg.taglib.json.util.JSONException;
 import atg.taglib.json.util.JSONObject;
 
+import com.apple.crypto.provider.CryptoGlobals;
 import com.sssta.qinbot.event.EventCallback;
 import com.sssta.qinbot.model.BotCookie;
 import com.sssta.qinbot.model.BotState;
@@ -18,7 +19,7 @@ import com.sssta.qinbot.model.DiscussGroup;
 import com.sssta.qinbot.model.Friend;
 import com.sssta.qinbot.model.Group;
 import com.sssta.qinbot.model.VerifyCodeChecker;
-import com.sssta.qinbot.util.FunnyHash;
+import com.sssta.qinbot.util.Cyrpt;
 import com.sssta.qinbot.util.HttpHelper;
 
 import static com.sssta.qinbot.util.HttpHelper.*;
@@ -141,7 +142,7 @@ public class Bot {
 		//发起第一次登陆请求
 		
 		//获取密码hash码
-		String p = FunnyHash.getPswHash(psw, uni, vcode);		
+		String p = Cyrpt.getEncryption(psw, uni, vcode);
 		
 		HashMap<String, String> properties = new HashMap<String, String>();
 		properties.put(PROPERTY_ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
@@ -226,7 +227,7 @@ public class Bot {
 
 	private void updateFriends() {
 		
-		String content = String.format("{\"h\":\"hello\",\"hash\":\"%s\",\"vfwebqq\":\"%s\"}",FunnyHash.getNewbiHash(ptwebqq, qq),vfwebqq);
+		String content = String.format("{\"h\":\"hello\",\"hash\":\"%s\",\"vfwebqq\":\"%s\"}",Cyrpt.getHash(ptwebqq, qq),vfwebqq);
 		content = "r="+URLEncoder.encode(content);
 		
 		HashMap<String, String> properties = new HashMap<String, String>();
@@ -280,7 +281,7 @@ public class Bot {
 
 	private void updateGroups() {
 		
-		String content = String.format("{\"hash\":\"%s\",\"vfwebqq\":\"%s\"}",FunnyHash.getNewbiHash(ptwebqq, qq),vfwebqq);
+		String content = String.format("{\"hash\":\"%s\",\"vfwebqq\":\"%s\"}",Cyrpt.getHash(ptwebqq, qq),vfwebqq);
 		content = "r="+URLEncoder.encode(content);
 		
 		HashMap<String, String> properties = new HashMap<String, String>();
