@@ -32,7 +32,6 @@ import com.sun.jndi.url.ldaps.ldapsURLContextFactory;
 
 public class HttpHelper {
 	public static final String PROPERTY_REFER = "Referer";
-	public static final String PROPERTY_COOKIE = "Cookie";
 	public static final String PROPERTY_ACCEPT = "Accept";
 	public static final String PROPERTY_ACCEPT_CHARSET = "Accept-Charset";
 	public static final String PROPERTY_ACCEPT_ENCODING = "Accept-Encoding";
@@ -46,7 +45,7 @@ public class HttpHelper {
 	
 	public static final String URL_POLL = "http://d.web2.qq.com/channel/poll2";
 	public static final String URL_GET_INFO_GROUP = "http://s.web2.qq.com/api/get_group_name_list_mask2";
-	public static final String URL_GET_FRIENDS = "http://s.web2.qq.com/api/get_group_name_list_mask2";
+	public static final String URL_GET_FRIENDS = "http://s.web2.qq.com/api/get_user_friends2";
 	public static final String URL_SEND_GROUP = "http://d.web2.qq.com/channel/send_qun_msg2";
 
 	public static final String URL_REFER_LOGIN_1 ="http://d.web2.qq.com/proxy.html?v=20110331002&callback=1&id=2";
@@ -59,7 +58,8 @@ public class HttpHelper {
       //u qq号 p 加密码  verifycode   login_sig    verifysession
     public static final String URL_FORMAT_LOGIN = "https://ssl.ptlogin2.qq.com/login?u=%s&p=%s&verifycode=%s&webqq_type=10&remember_uin=1&login2qq=1&aid=1003903&u1=http%%3A%%2F%%2Fweb2.qq.com%%2Floginproxy.html%%3Flogin2qq%%3D1%%26webqq_type%%3D10&h=1&ptredirect=0&ptlang=2052&daid=164&from_ui=1&pttype=1&dumy=&fp=loginerroralert&action=6-31-678356&mibao_css=m_webqq&t=1&g=1&js_type=0&js_ver=10088&login_sig=%s&pt_uistyle=5&pt_vcode_v1=0&pt_verifysession_v1=%s";
     
-    public static final String URL_FORMAT_GET_FRIENDS = "";
+    //uni 临时号  verifysession  就叫这个名字  vfwebqq 同上  t 时间
+    public static final String URL_FORMAT_GET_FRIEND_QQ = "http://s.web2.qq.com/api/get_friend_uin2?tuin=%s&verifysession=%s&type=1&code=&vfwebqq=%s&t=%d";
     
     private static HashMap<String, BotCookie> cookieMap = new HashMap<String, BotCookie>();
 	private static StringBuilder cookieCache = new StringBuilder();
@@ -77,15 +77,14 @@ public class HttpHelper {
 	            	Set<String> keys = propertyMap.keySet();
 			    	Iterator<String> iterator = keys.iterator();
 			    	while (iterator.hasNext()) {
-			    		String property = propertyMap.get(iterator.next());
-			            conn.addRequestProperty(property, propertyMap.get(property));  
+			    		String key = iterator.next();
+			            conn.addRequestProperty(key, propertyMap.get(key));  
 			    	}
 	            }
 	            
 	            conn.addRequestProperty("Cookie", getCookie());  
 	            conn.addRequestProperty("Accept-Charset", "UTF-8;");//GB2312,  
 	            conn.addRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36");
-	            conn.addRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36");  
 	            conn.setDoInput(true);
 	            conn.setDoOutput(true);   
 	            conn.connect();  
@@ -101,8 +100,7 @@ public class HttpHelper {
 	              
 	            InputStream ins =  conn.getInputStream();  
 	              
-	            String charset = "UTF-8";   
-	            inr = new InputStreamReader(ins, charset);  
+	            inr = new InputStreamReader(ins, "UTF-8");  
 	            BufferedReader bfr = new BufferedReader(inr);  
 	             
 	            String line = "";  
@@ -147,8 +145,8 @@ public class HttpHelper {
 	            	Set<String> keys = propertyMap.keySet();
 			    	Iterator<String> iterator = keys.iterator();
 			    	while (iterator.hasNext()) {
-			    		String property = propertyMap.get(iterator.next());
-			            conn.addRequestProperty(property, propertyMap.get(property));  
+			    		String key = iterator.next();
+			            conn.addRequestProperty(key, propertyMap.get(key));  
 			    	}
 	            }
 	            conn.addRequestProperty("Cookie", getCookie());  
@@ -274,7 +272,6 @@ public class HttpHelper {
 	    }
 	    
 	    public static void addCookie(BotCookie cookie){
-	    	System.out.println(cookie.getName());
     		cookieCache.append(cookie.getName()).append("=").append(cookie.getValue()).append(";");
 	    	cookieMap.put(cookie.getName(), cookie);
 	    }
@@ -291,7 +288,6 @@ public class HttpHelper {
 	    public static String getCookies(String[] keys){
 	    	StringBuilder cookiesBuilder = new StringBuilder();
 	    	for (String key:keys) {
-	    		System.out.println(key);
 	    		BotCookie cookie = cookieMap.get(key);
 	    		cookiesBuilder.append(cookie.getName()).append("=").append(cookie.getValue()).append(";");
 			}

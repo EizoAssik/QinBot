@@ -1,5 +1,13 @@
 package com.sssta.qinbot.util;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+
 /**
  * A 'pure' Java fork of the pass.js
  */
@@ -11,23 +19,46 @@ public class Cyrpt {
     // This is the `chrsz` in pass.js
     static final int CHARSIZE = 8;
     static final int HASHMOD = 32;
+    static ScriptEngineManager m = new ScriptEngineManager();
+	static ScriptEngine jsEngine ;
 
     /**
      * Just keep the interface
      *
      * @param password password
-     * @param uni      uni
+     * @param uin      uin
      * @param vcode    vcode
      * @return Hashed String
      */
-    static public String getEncryption(String password, String uni, String vcode) {
+    static public String getEncryption(String password, String uin, String vcode) {
         password = null == password ? "" : password;
-        uni = null == uni ? "" : uni;
+        uin = null == uin ? "" : uin;
         vcode = null == vcode ? "" : vcode;
         String pw_md5 = hexchar2bin(md5(password));
-        String pu_md5 = md5(pw_md5 + hackUin(uni));
+        String pu_md5 = md5(pw_md5 + hackUin(uin));
         String hashed = md5(pu_md5 + vcode.toUpperCase());
         return hashed;
+    }
+    
+    public static String getHash(String ptwebqq,String uin){
+    	ptwebqq = null == ptwebqq?"":ptwebqq;
+    	uin = null == uin?"":uin;
+    	String p = "";
+		try {
+			if (jsEngine == null) {
+				jsEngine = m.getEngineByName("javascript");
+				jsEngine.eval(new FileReader(
+						new File("src/com/sssta/qinbot/util/pass.js")));
+			}
+			
+			Object t = jsEngine.eval("hash_get(\"" + uin + "\",\"" + ptwebqq + "\");");
+			p = t.toString();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (ScriptException e) {
+			e.printStackTrace();
+		}
+		return p;
     }
 
     static public String md5(String s) {

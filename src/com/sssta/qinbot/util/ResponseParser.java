@@ -2,7 +2,6 @@ package com.sssta.qinbot.util;
 
 import static com.sssta.qinbot.util.HttpHelper.PROPERTY_ACCEPT;
 import static com.sssta.qinbot.util.HttpHelper.PROPERTY_ACCEPT_CHARSET;
-import static com.sssta.qinbot.util.HttpHelper.PROPERTY_COOKIE;
 import static com.sssta.qinbot.util.HttpHelper.PROPERTY_CONNECTION;
 
 import static com.sssta.qinbot.util.HttpHelper.getCookie;
@@ -40,7 +39,6 @@ public class ResponseParser {
 			if (!matcher.group(3).equals("")) {
 				HashMap<String, String> properties = new HashMap<String, String>();
 				properties.put(PROPERTY_ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
-				properties.put(PROPERTY_COOKIE,getCookie());
 				properties.put(PROPERTY_ACCEPT_CHARSET, "UTF-8;");
 				properties.put(PROPERTY_CONNECTION, "keep-alive");
 				HttpHelper.sendGet(matcher.group(3),properties);
@@ -52,4 +50,6 @@ public class ResponseParser {
     	}
     
 	}
+	
+	
 }

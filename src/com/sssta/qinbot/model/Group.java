@@ -4,7 +4,7 @@ import atg.taglib.json.util.JSONException;
 import atg.taglib.json.util.JSONObject;
 
 public class Group {
-	private String uni;
+	private String uin;
 	private String code;
 	private String flag;
 	private String name;
@@ -12,17 +12,17 @@ public class Group {
 	public Group(JSONObject group) {
 		flag = group.optString("flag");
 		code = group.optString("code");
-		uni = group.optString("gid");
+		uin = group.optString("gid");
 		name = group.optString("name");
-		System.out.println("Group--"+uni);
+		System.out.println("Group--"+uin);
 	}
 
-	public String getUni() {
-		return uni;
+	public String getUin() {
+		return uin;
 	}
 
-	public void setUni(String uni) {
-		this.uni = uni;
+	public void setUin(String uni) {
+		this.uin = uni;
 	}
 
 	public String getCode() {
